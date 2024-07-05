@@ -195,6 +195,9 @@ class FTPoseEncoder:
                 elif label_name == 'Ry':
                     llim =-24.09146949
                     ulim = 24.41429579
+                norm_target = (((target - llim) / (ulim - llim)) * 2) - 1
+                encoded_pose.append(norm_target.unsqueeze(dim=1))
+
 
             elif label_name in FT_LABEL_NAMES:
                 llim = self.ft_llims_torch[FT_LABEL_NAMES.index(label_name)]
@@ -246,6 +249,14 @@ class FTPoseEncoder:
                 pred_rot = torch.atan2(sin_predictions, cos_predictions)
                 pred_rot = pred_rot * (180.0 / np.pi)
                 '''
+                predictions = outputs[:, label_name_idx].detach().cpu()
+                if label_name == 'Rx':
+                    llim =-23.07850773
+                    ulim = 24.76522619
+                elif label_name == 'Ry':
+                    llim =-24.09146949
+                    ulim = 24.41429579
+                pred_rot = (((predictions + 1) / 2) * (ulim - llim)) + llim
                 decoded_pose[label_name] = pred_rot
                 label_name_idx += 2
 
