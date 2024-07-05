@@ -258,7 +258,7 @@ class FTPoseEncoder:
                     ulim = 24.41429579
                 pred_rot = (((predictions + 1) / 2) * (ulim - llim)) + llim
                 decoded_pose[label_name] = pred_rot
-                label_name_idx += 2
+                label_name_idx += 1
 
             elif label_name in FT_LABEL_NAMES:
                 predictions = outputs[:, label_name_idx].detach().cpu()
