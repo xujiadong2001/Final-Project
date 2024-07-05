@@ -1,0 +1,18 @@
+Metrics
+evaluated_acc:
+z              0.400000
+Rx             0.133333
+Ry             0.066667
+Fx             0.200000
+Fy             0.400000
+Fz             0.400000
+overall_acc    0.000000
+dtype: float32
+evaluated_err:
+z     0.592023
+Rx    5.617944
+Ry    9.543425
+Fx    0.842458
+Fy    0.601893
+Fz    0.762874
+dtype: float64
