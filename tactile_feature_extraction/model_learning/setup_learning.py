@@ -53,7 +53,7 @@ def setup_learning(save_dir=None):
         'adam_b1': 0.9,
         'adam_b2': 0.999,
         'shuffle': True,
-        'n_cpu': 1,
+        'n_cpu': 8,
     }
 
     image_processing_params = {
@@ -147,7 +147,7 @@ def setup_task(task_name):
     """
 
     if task_name == 'linshear_surface_3d':
-        out_dim = 8 # 为什么是8
+        out_dim = 6
         label_names = ['z', 'Rx', 'Ry', 'Fx', 'Fy', 'Fz']
 
     else:

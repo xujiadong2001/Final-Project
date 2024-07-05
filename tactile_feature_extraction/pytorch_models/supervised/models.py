@@ -54,7 +54,7 @@ def create_model(
         model = LSTMModel(
             input_dim=2048,
             hidden_dim=64,
-            output_dim=8, # 为什么是8
+            output_dim=out_dim,
             num_layers=2
         ).to(device)
     elif model_params['model_type'] == 'transformer':
@@ -64,7 +64,7 @@ def create_model(
             nhead=8,
             num_encoder_layers=6,
             dim_feedforward=2048,
-            output_dim=8
+            output_dim=out_dim
         ).to(device)
     else:
         raise ValueError('Incorrect model_type specified:  %s' % (model_params['model_type'],))

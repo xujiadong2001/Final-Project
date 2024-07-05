@@ -184,9 +184,17 @@ class FTPoseEncoder:
 
             # sine/cosine encoding of angle
             elif label_name in ROT_LABEL_NAMES:
+                '''
                 ang = target * np.pi/180
                 encoded_pose.append(torch.sin(ang).float().to(self.device).unsqueeze(dim=1))
                 encoded_pose.append(torch.cos(ang).float().to(self.device).unsqueeze(dim=1))
+                '''
+                if label_name == 'Rx':
+                    llim =-23.07850773
+                    ulim = 24.76522619
+                elif label_name == 'Ry':
+                    llim =-24.09146949
+                    ulim = 24.41429579
 
             elif label_name in FT_LABEL_NAMES:
                 llim = self.ft_llims_torch[FT_LABEL_NAMES.index(label_name)]
@@ -232,10 +240,12 @@ class FTPoseEncoder:
                 label_name_idx += 1
 
             elif label_name in ROT_LABEL_NAMES:
+                '''
                 sin_predictions = outputs[:, label_name_idx].detach().cpu()
                 cos_predictions = outputs[:, label_name_idx + 1].detach().cpu()
                 pred_rot = torch.atan2(sin_predictions, cos_predictions)
                 pred_rot = pred_rot * (180.0 / np.pi)
+                '''
                 decoded_pose[label_name] = pred_rot
                 label_name_idx += 2
 
