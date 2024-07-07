@@ -339,3 +339,5 @@ class FTPoseEncoder:
         acc_df['overall_acc'] = overall_correct.astype(np.float32)
 
         return acc_df
+
+

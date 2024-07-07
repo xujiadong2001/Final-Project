@@ -149,6 +149,9 @@ def setup_task(task_name):
     if task_name == 'linshear_surface_3d':
         out_dim = 6
         label_names = ['z', 'Rx', 'Ry', 'Fx', 'Fy', 'Fz']
+    elif task_name == 'only_ft':
+        out_dim = 3
+        label_names = ['Fx', 'Fy', 'Fz']
 
     else:
         raise ValueError('Incorrect task_name specified: {}'.format(task_name))

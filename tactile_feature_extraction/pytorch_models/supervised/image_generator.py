@@ -179,6 +179,89 @@ class feature_data_generator(torch.utils.data.Dataset):
 
         return sample
 
+class FrameDataset(torch.utils.data.Dataset):
+    def __init__(self, features_dir, labels_dir, frame_indices, n_frames, transform=None):
+        self.features_dir = features_dir
+        self.labels_dir = labels_dir
+        self.n_frames = n_frames
+        self.transform = transform
+        self.frame_indices = json.load(open(frame_indices))
+        self.samples = self._create_samples()
+
+    def _create_samples(self):
+        samples = []
+        feature_files = [f for f in os.listdir(self.features_dir) if f.endswith('_features.npy')]
+        for feature_file in feature_files:
+            feature_path = os.path.join(self.features_dir, feature_file)
+            features = np.load(feature_path)
+            indices = self.frame_indices[feature_file.replace('_features.npy', '')]
+            label_file = feature_file.replace('_features.npy', '.pkl')
+            label_path = os.path.join(self.labels_dir, label_file)
+
+            # 检查标签文件是否存在
+            if not os.path.exists(label_path):
+                print(f"Label file {label_path} not found. Skipping.")
+                continue
+
+            with open(label_path, 'rb') as f:
+                labels = pickle.load(f)
+
+            # 从标签字典中提取帧编号和对应的Fx, Fy, Fz值
+            frames = labels['frame']
+            fx_values = labels['fx']
+            fy_values = labels['fy']
+            fz_values = labels['fz']
+            num_frames = len(frames)
+            label_index = 0
+            for i in range(num_frames):
+                input_frames = []
+                frame_index = frames[i]
+                '''
+                if i==0:
+                    frame_index = frames[i]
+                elif frames[i] == frame_index+1: # 检查帧是否连续
+                    frame_index = frames[i] # 获取当前帧的索引
+                else:
+                    label_index = 0
+                    frame_index = frames[i]
+                '''  # 如果不考虑label的跳跃，一般来说问题不大，但是存在一种可能，label序号跳跃了，frame也跳跃了。如果这样的话，会报错。
+                if frame_index not in indices:
+                    label_index = 0
+                    # frame_index = frames[i]
+                    continue
+
+                for j in range(self.n_frames):
+                    if label_index - j < 0:
+                        if feature_file == "sample_96_features.npy":
+                            print(indices.index(frames[i - label_index]))
+                        input_frames.insert(0, features[indices.index(frames[i - label_index])])
+                    else:
+                        if feature_file == "sample_96_features.npy":
+                            print(indices.index(frame_index - j))
+                        input_frames.insert(0, features[indices.index(frame_index - j)])
+
+                input_frames = np.stack(input_frames)
+                label = [fx_values[i], fy_values[i], fz_values[i]]  # 获取当前帧的标签
+                samples.append((input_frames, label))
+                label_index += 1
+        return samples
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        frames_data, label = self.samples[idx]
+
+        if self.transform:
+            frames_data = self.transform(frames_data)
+        # return torch.tensor(frames_data, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        # labels为dataframe，第一个值标为fx，第二个值标为fy，第三个值标为fz
+        labels = {'fx': label[0], 'fy': label[1], 'fz': label[2]}
+        sample = {'images': torch.tensor(frames_data, dtype=torch.float32), 'labels': labels}
+        return sample
+
+
+
 
 def numpy_collate(batch):
     '''

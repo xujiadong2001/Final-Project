@@ -34,7 +34,7 @@ def launch():
     sensors = args.sensors
     models = args.models
     # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    models=['lstm']
+    # models=['lstm']
     # models=['transformer']
     device = args.device
 
