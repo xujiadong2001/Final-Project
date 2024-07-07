@@ -4,6 +4,7 @@ import cv2
 import pandas as pd
 import torch
 import json
+import pickle
 
 from tactile_image_processing.image_transforms import process_image
 from tactile_image_processing.image_transforms import augment_image
