@@ -254,7 +254,7 @@ class FrameDataset(torch.utils.data.Dataset):
             frames_data = self.transform(frames_data)
         # return torch.tensor(frames_data, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
         # labels为dataframe，第一个值标为fx，第二个值标为fy，第三个值标为fz
-        labels = {'fx': label[0], 'fy': label[1], 'fz': label[2]}
+        labels = {'Fx': label[0], 'Fy': label[1], 'Fz': label[2]}
         sample = {'images': torch.tensor(frames_data, dtype=torch.float32), 'labels': labels}
         return sample
 
