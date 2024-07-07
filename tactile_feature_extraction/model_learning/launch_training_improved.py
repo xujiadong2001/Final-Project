@@ -86,7 +86,7 @@ def launch():
             n_frames = 5  # 前n帧
             # set generators and loaders
             train_generator = DataGenerator(
-                eatures_dir,
+                features_dir,
                 labels_dir,
                 frame_indices,
                 n_frames,
