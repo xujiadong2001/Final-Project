@@ -1,5 +1,6 @@
 import os
 import itertools
+import torch
 
 from tactile_feature_extraction.model_learning.setup_learning import parse_args
 from tactile_feature_extraction.model_learning.setup_learning import setup_model

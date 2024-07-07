@@ -234,12 +234,8 @@ class FrameDataset(torch.utils.data.Dataset):
 
                 for j in range(self.n_frames):
                     if label_index - j < 0:
-                        if feature_file == "sample_96_features.npy":
-                            print(indices.index(frames[i - label_index]))
                         input_frames.insert(0, features[indices.index(frames[i - label_index])])
                     else:
-                        if feature_file == "sample_96_features.npy":
-                            print(indices.index(frame_index - j))
                         input_frames.insert(0, features[indices.index(frame_index - j)])
 
                 input_frames = np.stack(input_frames)
