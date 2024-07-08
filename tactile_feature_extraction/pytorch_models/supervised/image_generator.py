@@ -259,7 +259,7 @@ class FrameDataset(torch.utils.data.Dataset):
         return sample
 
 
-class PhotoDataset(Dataset):
+class PhotoDataset(torch.utils.data.Dataset):
     def __init__(
             self,
             photos_dir,
