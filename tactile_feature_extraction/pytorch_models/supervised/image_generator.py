@@ -279,7 +279,6 @@ class PhotoDataset(torch.utils.data.Dataset):
         self.photos_dir = photos_dir
         self.labels_dir = labels_dir
         self.n_frames = n_frames
-        self.transform = transform
 
         self._dims = dims
         self._bbox = bbox
