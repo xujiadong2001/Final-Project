@@ -189,6 +189,7 @@ class FTPoseEncoder:
                 encoded_pose.append(torch.sin(ang).float().to(self.device).unsqueeze(dim=1))
                 encoded_pose.append(torch.cos(ang).float().to(self.device).unsqueeze(dim=1))
                 '''
+                # 角度差修改为直接计算
                 if label_name == 'Rx':
                     llim =-23.07850773
                     ulim = 24.76522619
@@ -249,6 +250,7 @@ class FTPoseEncoder:
                 pred_rot = torch.atan2(sin_predictions, cos_predictions)
                 pred_rot = pred_rot * (180.0 / np.pi)
                 '''
+                # 角度差修改为直接计算
                 predictions = outputs[:, label_name_idx].detach().cpu()
                 if label_name == 'Rx':
                     llim =-23.07850773
@@ -292,6 +294,7 @@ class FTPoseEncoder:
                 ).detach().cpu().numpy()
 
             elif label_name in ROT_LABEL_NAMES:
+
                 # convert rad
                 targ_rot = labels[label_name] * np.pi/180
                 pred_rot = predictions[label_name] * np.pi/180
