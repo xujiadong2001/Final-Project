@@ -321,7 +321,7 @@ class PhotoDataset(torch.utils.data.Dataset):
                 photo_path = video_path + '/frame_' + str(i) + '.png'
                 if not os.path.exists(photo_path):
                     continue
-                raw_image = cv2.imread(image_filename)
+                raw_image = cv2.imread(photo_path)
 
                 # preprocess/augment image
                 processed_image = process_image(
