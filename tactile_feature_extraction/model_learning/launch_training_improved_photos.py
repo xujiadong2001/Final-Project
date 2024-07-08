@@ -89,7 +89,7 @@ def launch():
                 photos_dir,
                 labels_dir,
                 n_frames,
-                train_processing_params
+                **train_processing_params
             )
             # 划分训练集和验证集
             train_size = int(0.8 * len(train_generator))
