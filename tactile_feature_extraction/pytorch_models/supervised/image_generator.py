@@ -275,7 +275,6 @@ class PhotoDataset(torch.utils.data.Dataset):
             rzoom=None,
             brightlims=None,
             noise_var=None,
-            transform=None
     ):
         self.photos_dir = photos_dir
         self.labels_dir = labels_dir
@@ -355,8 +354,6 @@ class PhotoDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         frames_data, label = self.samples[idx]
 
-        if self.transform:
-            frames_data = self.transform(frames_data)
         labels = {'Fx': label[0], 'Fy': label[1], 'Fz': label[2]}
         sample = {'images': torch.tensor(frames_data, dtype=torch.float32), 'labels': labels}
         return sample
