@@ -387,10 +387,10 @@ class ConvLstm(nn.Module):
         # 移除最后一层全连接层
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
         self.Lstm = LSTMModel(
-            input_size=fc_layers[-1],
-            hidden_size=lstm_hidden_dim,
-            n_layers=lstm_layers,
-            n_class=out_dim
+            input_dim=fc_layers[-1],
+            hidden_dim=lstm_hidden_dim,
+            output_dim=out_dim,
+            num_layers=lstm_layers
         )
         self.output_layer = nn.Linear(lstm_hidden_dim, out_dim)
 
