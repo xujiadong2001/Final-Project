@@ -452,7 +452,6 @@ class PhotoDataset_ConvLstm(torch.utils.data.Dataset):
                     processed_image = np.rollaxis(processed_image, 2, 0)
                     input_photos.append(processed_image)
                 input_photos = np.stack(input_photos) # shape = (n_frames, 1, width, height)
-                input_photos = np.squeeze(input_photos, axis=1) # shape = (n_frames, width, height)
                 label = [fx_values[i], fy_values[i], fz_values[i]]
                 samples.append((input_photos, label))
         return samples
