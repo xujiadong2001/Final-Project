@@ -74,7 +74,7 @@ def create_model(
             lstm_hidden_dim=128,
             lstm_layers=2,
             **model_params['model_kwargs']
-        )
+        ).to(device)
     else:
         raise ValueError('Incorrect model_type specified:  %s' % (model_params['model_type'],))
 
