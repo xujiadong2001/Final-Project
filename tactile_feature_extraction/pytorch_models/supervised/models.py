@@ -386,7 +386,7 @@ class ConvLstm(nn.Module):
             self.conv_model.load_state_dict(torch.load(cnn_pretained))
         # 移除最后一层全连接层
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
-        self.Lstm = LstmModel(
+        self.Lstm = LSTMModel(
             input_size=fc_layers[-1],
             hidden_size=lstm_hidden_dim,
             n_layers=lstm_layers,
