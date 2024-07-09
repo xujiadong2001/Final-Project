@@ -358,6 +358,7 @@ class PhotoDataset(torch.utils.data.Dataset):
         sample = {'images': torch.tensor(frames_data, dtype=torch.float32), 'labels': labels}
         return sample
 
+from tqdm import tqdm
 class PhotoDataset_ConvLstm(torch.utils.data.Dataset):
     def __init__(
             self,
@@ -395,7 +396,7 @@ class PhotoDataset_ConvLstm(torch.utils.data.Dataset):
     def _create_samples(self):
         samples = []
         videos = [f for f in os.listdir(self.photos_dir)]
-        for video in videos:
+        for video in tqdm(videos):
             video_path = os.path.join(self.photos_dir, video)
             label_file = video + '.pkl'
             label_path = os.path.join(self.labels_dir, label_file)
