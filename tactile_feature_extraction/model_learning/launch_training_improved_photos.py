@@ -10,7 +10,7 @@ from tactile_feature_extraction.model_learning.evaluate_model import evaluate_mo
 
 from tactile_feature_extraction.pytorch_models.supervised.models import create_model
 from tactile_feature_extraction.pytorch_models.supervised.train_model_w_metrics import train_model_w_metrics
-from tactile_feature_extraction.pytorch_models.supervised.image_generator import PhotoDataset
+from tactile_feature_extraction.pytorch_models.supervised.image_generator import PhotoDataset, PhotoDataset_ConvLstm
 
 
 from tactile_feature_extraction.utils.utils_plots import ErrorPlotter
@@ -50,7 +50,10 @@ def launch():
             model_params = setup_model(model_type, save_dir)
             learning_params, image_processing_params, frame_processing_params, augmentation_params = setup_learning(save_dir)
 
-            DataGenerator = PhotoDataset
+            if model_type != 'conv_lstm':
+                DataGenerator = PhotoDataset
+            else:
+                DataGenerator = PhotoDataset_ConvLstm
             train_processing_params = {**image_processing_params, **augmentation_params}
             val_processing_params = image_processing_params
             in_dim = image_processing_params['dims']
