@@ -134,6 +134,15 @@ def setup_model(model_type, save_dir):
             'mlp_dim': 512,
             'pool': 'mean',  # for regression
         }
+    elif model_type == 'conv_lstm':
+        model_params['model_kwargs'] = {
+            'conv_layers': [32, 32, 32, 32],
+            'conv_kernel_sizes': [11, 9, 7, 5],
+            'fc_layers': [512, 512],
+            'activation': 'relu',
+            'dropout': 0.0,
+            'apply_batchnorm': True,
+        }
 
     # save parameters
     save_json_obj(model_params, os.path.join(save_dir, 'model_params'))
