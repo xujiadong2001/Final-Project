@@ -392,15 +392,15 @@ class ConvLstm(nn.Module):
             output_dim=out_dim,
             num_layers=lstm_layers
         )
-        self.output_layer = nn.Linear(lstm_hidden_dim, out_dim)
+        # self.output_layer = nn.Linear(lstm_hidden_dim, out_dim)
 
     def forward(self, x):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
         conv_output = self.conv_model(conv_input)
         lstm_input = conv_output.view(batch_size, timesteps, -1)
-        lstm_output = self.Lstm(lstm_input)
-        lstm_output = lstm_output[:, -1, :]
-        output = self.output_layer(lstm_output)
+        output = self.Lstm(lstm_input) # [batch_size, timesteps, lstm_hidden_dim]
+        # lstm_output = lstm_output[:, -1, :]
+        # output = self.output_layer(lstm_output)
         return output
 
