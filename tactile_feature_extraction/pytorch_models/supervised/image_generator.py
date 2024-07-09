@@ -416,36 +416,44 @@ class PhotoDataset_ConvLstm(torch.utils.data.Dataset):
             num_frames = len(frames)
             label_index = 0
             for i in range(num_frames):
-                input_photos = []
-                photo_path = video_path + '/frame_' + str(i) + '.png'
+                input_photos_dirs = []
+                frame_index = frames[i]
+                photo_path = video_path + '/frame_' + str(frame_index) + '.png'
                 if not os.path.exists(photo_path):
+                    label_index = 0
                     continue
-                raw_image = cv2.imread(photo_path)
-
-                # preprocess/augment image
-                processed_image = process_image(
-                    raw_image,
-                    gray=True,
-                    bbox=self._bbox,
-                    dims=self._dims,
-                    stdiz=self._stdiz,
-                    normlz=self._normlz,
-                    blur=self._blur,
-                    thresh=self._thresh,
-                )
-
-                processed_image = augment_image(
-                    processed_image,
-                    rshift=self._rshift,
-                    rzoom=self._rzoom,
-                    brightlims=self._brightlims,
-                    noise_var=self._noise_var
-                )
-
-                # put the channel into first axis because pytorch
-                processed_image = np.rollaxis(processed_image, 2, 0)
+                for j in range(self.n_frames):
+                    if label_index - j < 0:
+                        input_photos_dirs.insert(0, video_path + '/frame_' + str(frames[i - label_index]) + '.png')
+                    else:
+                        input_photos_dirs.insert(0, video_path + '/frame_' + str(frame_index - j) + '.png')
+                input_photos= []
+                for photo_path in input_photos_dirs:
+                    photo= cv2.imread(photo_path)
+                    # preprocess/augment image
+                    processed_image = process_image(
+                        photo,
+                        gray=True,
+                        bbox=self._bbox,
+                        dims=self._dims,
+                        stdiz=self._stdiz,
+                        normlz=self._normlz,
+                        blur=self._blur,
+                        thresh=self._thresh,
+                    )
+                    processed_image = augment_image(
+                        processed_image,
+                        rshift=self._rshift,
+                        rzoom=self._rzoom,
+                        brightlims=self._brightlims,
+                        noise_var=self._noise_var
+                    )
+                    # put the channel into first axis because pytorch
+                    processed_image = np.rollaxis(processed_image, 2, 0)
+                    input_photos.append(processed_image)
+                input_photos = np.stack(input_photos)
                 label = [fx_values[i], fy_values[i], fz_values[i]]
-                samples.append((processed_image, label))
+                samples.append((input_photos, label))
         return samples
 
     def __len__(self):
