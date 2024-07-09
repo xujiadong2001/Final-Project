@@ -66,6 +66,15 @@ def create_model(
             dim_feedforward=2048,
             output_dim=out_dim
         ).to(device)
+    elif model_params['model_type'] == 'conv_lstm':
+        model = ConvLstm(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            lstm_hidden_dim=128,
+            lstm_layers=2,
+            **model_params['model_kwargs']
+        ).
     else:
         raise ValueError('Incorrect model_type specified:  %s' % (model_params['model_type'],))
 
@@ -343,3 +352,55 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         x = x + self.pe[:x.size(0), :]
         return self.dropout(x)
+
+
+class ConvLstm(nn.Module):
+    def __init__(
+            self,
+            in_dim,
+            in_channels,
+            out_dim,
+            lstm_hidden_dim=128,
+            lstm_layers=2,
+            conv_layers=[16, 16, 16],
+            conv_kernel_sizes=[5, 5, 5],
+            fc_layers=[128, 128],
+            activation='relu',
+            apply_batchnorm=False,
+            dropout=0.0,
+            cnn_pretained=None,
+        ):
+        super(ConvLstm, self).__init__()
+        self.conv_model = CNN(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            conv_layers=conv_layers,
+            conv_kernel_sizes=conv_kernel_sizes,
+            fc_layers=fc_layers,
+            activation=activation,
+            apply_batchnorm=apply_batchnorm,
+            dropout=dropout
+        )
+        if cnn_pretained:
+            self.conv_model.load_state_dict(torch.load(cnn_pretained))
+        # 移除最后一层全连接层
+        self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
+        self.Lstm = LstmModel(
+            input_size=fc_layers[-1],
+            hidden_size=lstm_hidden_dim,
+            n_layers=lstm_layers,
+            n_class=out_dim
+        )
+        self.output_layer = nn.Linear(lstm_hidden_dim, out_dim)
+
+    def forward(self, x):
+        batch_size, timesteps, channel_x, h_x, w_x = x.shape
+        conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
+        conv_output = self.conv_model(conv_input)
+        lstm_input = conv_output.view(batch_size, timesteps, -1)
+        lstm_output = self.Lstm(lstm_input)
+        lstm_output = lstm_output[:, -1, :]
+        output = self.output_layer(lstm_output)
+        return output
+
