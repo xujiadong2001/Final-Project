@@ -75,6 +75,17 @@ def create_model(
             lstm_layers=2,
             **model_params['model_kwargs']
         ).to(device)
+    elif model_params['model_type'] == 'conv_transformer':
+        model = ConvTransformer(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            d_model=512,
+            nhead=8,
+            num_encoder_layers=6,
+            dim_feedforward=2048,
+            **model_params['model_kwargs']
+        ).to(device)
     else:
         raise ValueError('Incorrect model_type specified:  %s' % (model_params['model_type'],))
 
@@ -404,3 +415,53 @@ class ConvLstm(nn.Module):
         # output = self.output_layer(lstm_output)
         return output
 
+class ConvTransformer(nn.Module):
+    def __init__(
+            self,
+            in_dim,
+            in_channels,
+            out_dim,
+            d_model=512,
+            nhead=8,
+            num_encoder_layers=6,
+            dim_feedforward=2048,
+            conv_layers=[16, 16, 16],
+            conv_kernel_sizes=[5, 5, 5],
+            fc_layers=[128, 128],
+            activation='relu',
+            apply_batchnorm=False,
+            dropout=0.1,
+            cnn_pretained=None
+        ):
+        super(ConvTransformer, self).__init__()
+        self.conv_model = CNN(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            conv_layers=conv_layers,
+            conv_kernel_sizes=conv_kernel_sizes,
+            fc_layers=fc_layers,
+            activation=activation,
+            apply_batchnorm=apply_batchnorm,
+            dropout=dropout
+        )
+        if cnn_pretained:
+            self.conv_model.load_state_dict(torch.load(cnn_pretained))
+        # 移除最后一层全连接层
+        self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
+        self.transformer = TransformerModel(
+            input_dim=fc_layers[-1],
+            d_model=d_model,
+            nhead=nhead,
+            num_encoder_layers=num_encoder_layers,
+            dim_feedforward=dim_feedforward,
+            output_dim=out_dim
+        )
+
+    def forward(self, x):
+        batch_size, timesteps, channel_x, h_x, w_x = x.shape
+        conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
+        conv_output = self.conv_model(conv_input)
+        transformer_input = conv_output.view(batch_size, timesteps, -1)
+        output = self.transformer(transformer_input)
+        return output

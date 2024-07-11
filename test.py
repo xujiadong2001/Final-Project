@@ -61,7 +61,7 @@ print(max_fx, min_fx, max_fy, min_fy, max_fz, min_fz)
 # 3.194190008565217 -4.186623157866097 2.80666496183682 -4.653198307965518 14.198157419509974 -0.050536551999998514
 """
 
-with open(os.path.join("collect_331_5D_surface/time_series", "sample_96.pkl"), 'rb') as f:
+
+with open(("E:/Download/val_pred_targ_err.pkl"), 'rb') as f:
     data = pickle.load(f)
-    # 检查data的key
-    print(data.keys())
+    print(data)
