@@ -352,7 +352,7 @@ class TransformerModel(nn.Module):
 
 class FullTransformerModel(nn.Module):
     def __init__(self, input_dim, d_model, nhead, num_encoder_layers, num_decoder_layers, dim_feedforward, output_dim, dropout=0.1):
-        super(TransformerModel, self).__init__()
+        super(FullTransformerModel, self).__init__()
         self.input_dim = input_dim
         self.d_model = d_model
 
