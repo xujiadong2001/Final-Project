@@ -82,7 +82,8 @@ def create_model(
             out_dim=out_dim,
             d_model=512,
             nhead=8,
-            num_encoder_layers=6,
+            num_encoder_layers=3,
+            num_decoder_layers=3,
             dim_feedforward=2048,
             **model_params['model_kwargs']
         ).to(device)
@@ -347,6 +348,53 @@ class TransformerModel(nn.Module):
         output = self.fc_out(output[:, -1, :])
         return output
 
+
+class FullTransformerModel(nn.Module):
+    def __init__(self, input_dim, d_model, nhead, num_encoder_layers, num_decoder_layers, dim_feedforward, output_dim, dropout=0.1):
+        super(TransformerModel, self).__init__()
+        self.input_dim = input_dim
+        self.d_model = d_model
+
+        # Embedding layers
+        self.src_embedding = nn.Linear(input_dim, d_model)
+        self.tgt_embedding = nn.Linear(output_dim, d_model)
+
+        # Positional encoding
+        self.pos_encoder = PositionalEncoding(d_model, dropout)
+        self.pos_decoder = PositionalEncoding(d_model, dropout)
+
+        # Transformer Encoder and Decoder Layers
+        self.encoder = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(d_model, nhead, dim_feedforward, dropout),
+            num_encoder_layers
+        )
+        self.decoder = nn.TransformerDecoder(
+            nn.TransformerDecoderLayer(d_model, nhead, dim_feedforward, dropout),
+            num_decoder_layers
+        )
+
+        # Output linear layer
+        self.fc_out = nn.Linear(d_model, output_dim)
+
+    def forward(self, src, tgt):
+        # Source and target embeddings
+        src = self.src_embedding(src) * math.sqrt(self.d_model)
+        tgt = self.tgt_embedding(tgt) * math.sqrt(self.d_model)
+
+        # Apply positional encoding
+        src = self.pos_encoder(src)
+        tgt = self.pos_decoder(tgt)
+
+        # Pass through the encoder and decoder
+        memory = self.encoder(src)
+        output = self.decoder(tgt, memory)
+
+        # Apply the output layer
+        output = self.fc_out(output)
+        return output
+
+
+
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, dropout=0.1, max_len=5000):
         super(PositionalEncoding, self).__init__()
@@ -424,6 +472,7 @@ class ConvTransformer(nn.Module):
             d_model=512,
             nhead=8,
             num_encoder_layers=6,
+            num_decoder_layers=6,
             dim_feedforward=2048,
             conv_layers=[16, 16, 16],
             conv_kernel_sizes=[5, 5, 5],
@@ -449,11 +498,12 @@ class ConvTransformer(nn.Module):
             self.conv_model.load_state_dict(torch.load(cnn_pretained))
         # 移除最后一层全连接层
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
-        self.transformer = TransformerModel(
+        self.transformer = FullTransformerModel(
             input_dim=fc_layers[-1],
             d_model=d_model,
             nhead=nhead,
             num_encoder_layers=num_encoder_layers,
+            num_decoder_layers=num_decoder_layers,
             dim_feedforward=dim_feedforward,
             output_dim=out_dim
         )
