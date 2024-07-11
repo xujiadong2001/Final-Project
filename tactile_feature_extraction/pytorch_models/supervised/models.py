@@ -85,7 +85,7 @@ def create_model(
             num_encoder_layers=3,
             num_decoder_layers=3,
             dim_feedforward=2048,
-            full_transformer=True,
+            full_transformer=False,
             **model_params['model_kwargs']
         ).to(device)
     else:
