@@ -475,6 +475,7 @@ class ConvTransformer(nn.Module):
             num_encoder_layers=6,
             num_decoder_layers=6,
             dim_feedforward=2048,
+            full_transformer=True,
             conv_layers=[16, 16, 16],
             conv_kernel_sizes=[5, 5, 5],
             fc_layers=[128, 128],
