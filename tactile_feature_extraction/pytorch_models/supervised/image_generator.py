@@ -380,6 +380,7 @@ class PhotoDataset_ConvLstm(torch.utils.data.Dataset):
         self.photos_dir = photos_dir
         self.labels_dir = labels_dir
         self.n_frames = n_frames
+        self.padding = padding
 
         self._dims = dims
         self._bbox = bbox
@@ -426,7 +427,7 @@ class PhotoDataset_ConvLstm(torch.utils.data.Dataset):
                     continue
                 for j in range(self.n_frames):
                     if label_index - j < 0:
-                        if padding:
+                        if self.padding:
                             input_photos_dirs.insert(0, video_path + '/frame_' + str(frames[i - label_index]) + '.png')
                         else:
                             continue
