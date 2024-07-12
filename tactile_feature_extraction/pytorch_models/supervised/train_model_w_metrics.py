@@ -95,9 +95,12 @@ def train_model_w_metrics(
             # set the parameter gradients to zero
             if training:
                 optimizer.zero_grad()
+                outputs = model(inputs)
 
             # forward pass, backward pass, optimize
-            outputs = model(inputs)
+            else:
+                with torch.no_grad():
+                    outputs = model(inputs)
             loss_size = loss(outputs, labels)
             epoch_batch_loss.append(loss_size.item())
 
