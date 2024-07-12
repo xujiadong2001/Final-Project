@@ -10,7 +10,7 @@ from tactile_feature_extraction.model_learning.evaluate_model import evaluate_mo
 
 from tactile_feature_extraction.pytorch_models.supervised.models import create_model
 from tactile_feature_extraction.pytorch_models.supervised.train_model_w_metrics import train_model_w_metrics
-from tactile_feature_extraction.pytorch_models.supervised.image_generator import PhotoDataset, PhotoDataset_ConvLstm
+from tactile_feature_extraction.pytorch_models.supervised.image_generator import PhotoDataset, PhotoDataset_ConvLstm, PhotoDataset_ConvLstm_2
 
 
 from tactile_feature_extraction.utils.utils_plots import ErrorPlotter
@@ -50,10 +50,16 @@ def launch():
             model_params = setup_model(model_type, save_dir)
             learning_params, image_processing_params, frame_processing_params, augmentation_params = setup_learning(save_dir)
 
+            n_frames = 50  # 前n帧
+
             if model_type != 'conv_lstm' and model_type != 'conv_transformer':
                 DataGenerator = PhotoDataset
             else:
-                DataGenerator = PhotoDataset_ConvLstm
+                if n_frames <= 10:
+                    DataGenerator = PhotoDataset_ConvLstm
+                else:
+                    DataGenerator = PhotoDataset_ConvLstm_2
+
             train_processing_params = {**image_processing_params, **augmentation_params}
             val_processing_params = image_processing_params
             in_dim = image_processing_params['dims']
@@ -86,7 +92,7 @@ def launch():
 
             photos_dir = 'collect_331_5D_surface/videos'
             labels_dir = 'collect_331_5D_surface/time_series'
-            n_frames = 50  # 前n帧
+
             # set generators and loaders
             train_generator = DataGenerator(
                 photos_dir,
