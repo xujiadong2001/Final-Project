@@ -71,6 +71,7 @@ def create_model(
             in_dim=in_dim,
             in_channels=in_channels,
             out_dim=out_dim,
+            lock_cnn=True, # 锁定CNN层
             lstm_hidden_dim=128,
             lstm_layers=2,
             **model_params['model_kwargs']
@@ -420,6 +421,7 @@ class ConvLstm(nn.Module):
             in_dim,
             in_channels,
             out_dim,
+            lock_cnn=False,
             lstm_hidden_dim=128,
             lstm_layers=2,
             conv_layers=[16, 16, 16],
@@ -444,6 +446,9 @@ class ConvLstm(nn.Module):
         )
         if cnn_pretained:
             self.conv_model.load_state_dict(torch.load(cnn_pretained))
+        if lock_cnn:
+            for param in self.conv_model.parameters():
+                param.requires_grad = False
         # 移除最后一层全连接层
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
         self.Lstm = LSTMModel(
