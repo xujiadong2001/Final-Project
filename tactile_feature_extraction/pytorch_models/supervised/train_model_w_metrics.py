@@ -218,11 +218,13 @@ def train_model_w_metrics(
                 writer.add_scalar(f'accuracy/val/{label_name}', val_acc_df[label_name].mean(), epoch)
                 writer.add_scalar(f'loss/val/{label_name}', val_err_df[label_name].mean(), epoch)
 
+            '''
             # track weights on tensorboard
             for name, weight in model.named_parameters():
                 full_name = f'{os.path.basename(os.path.normpath(save_dir))}/{name}'
                 writer.add_histogram(full_name, weight, epoch)
                 writer.add_histogram(f'{full_name}.grad', weight.grad, epoch)
+            '''
 
             # update plots
             if error_plotter:
