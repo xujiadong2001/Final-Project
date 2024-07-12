@@ -92,6 +92,7 @@ def launch():
                 photos_dir,
                 labels_dir,
                 n_frames,
+                padding=False, # 舍弃不足n帧的数据
                 **train_processing_params
             )
             # 划分训练集和验证集
