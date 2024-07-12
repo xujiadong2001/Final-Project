@@ -86,13 +86,13 @@ def launch():
 
             photos_dir = 'collect_331_5D_surface/videos'
             labels_dir = 'collect_331_5D_surface/time_series'
-            n_frames = 10  # 前n帧
+            n_frames = 20  # 前n帧
             # set generators and loaders
             train_generator = DataGenerator(
                 photos_dir,
                 labels_dir,
                 n_frames,
-                padding=False, # 舍弃不足n帧的数据
+                padding=True, # 舍弃不足n帧的数据
                 **train_processing_params
             )
             # 划分训练集和验证集
