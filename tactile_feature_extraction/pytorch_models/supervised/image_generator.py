@@ -473,7 +473,7 @@ class PhotoDataset_ConvLstm(torch.utils.data.Dataset):
         return sample
 
 
-class PhotoDataset_ConvLstm_2(Dataset):
+class PhotoDataset_ConvLstm_2(torch.utils.data.Dataset):
     def __init__(
             self,
             photos_dir,
@@ -531,12 +531,20 @@ class PhotoDataset_ConvLstm_2(Dataset):
             fy_values = labels['fy']
             fz_values = labels['fz']
             num_frames = len(frames)
+            label_index = 0
             for i in range(num_frames):
                 input_photos_dirs = []
                 frame_index = frames[i]
+                photo_path = video_path + '/frame_' + str(frame_index) + '.png'
+                if not os.path.exists(photo_path):
+                    label_index = 0
+                    continue
                 for j in range(self.n_frames):
-                    if frame_index - j < 0 and self.padding:
-                        input_photos_dirs.insert(0, video_path + '/frame_' + str(frames[0]) + '.png')
+                    if label_index - j < 0:
+                        if self.padding:
+                            input_photos_dirs.insert(0, video_path + '/frame_' + str(frames[i - label_index]) + '.png')
+                        else:
+                            continue
                     else:
                         input_photos_dirs.insert(0, video_path + '/frame_' + str(frame_index - j) + '.png')
                 label = [fx_values[i], fy_values[i], fz_values[i]]
@@ -573,7 +581,7 @@ class PhotoDataset_ConvLstm_2(Dataset):
             processed_image = np.rollaxis(processed_image, 2, 0)
             input_photos.append(processed_image)
 
-        input_photos = np.stack(input_photos) if input_photos else np.zeros((self.n_frames, 1, *self._dims))
+        input_photos = np.stack(input_photos)
         labels = {'Fx': label[0], 'Fy': label[1], 'Fz': label[2]}
         sample = {'images': torch.tensor(input_photos, dtype=torch.float32), 'labels': labels}
         return sample
