@@ -52,7 +52,7 @@ def launch():
 
             n_frames = 20  # 前n帧
 
-            if model_type != 'conv_lstm' and model_type != 'conv_transformer' and model_type != 'conv_gru':
+            if model_type != 'conv_lstm' and model_type != 'conv_transformer' and model_type != 'conv_gru' and model_type != 'seq2seq_conv_gru':
                 DataGenerator = PhotoDataset
             else:
                 if n_frames <= 20:

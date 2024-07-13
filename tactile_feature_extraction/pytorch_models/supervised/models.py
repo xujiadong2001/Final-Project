@@ -99,6 +99,16 @@ def create_model(
             gru_layers=2,
             **model_params['model_kwargs']
         ).to(device)
+    elif model_params['model_type'] == 'seq2seq_conv_gru':
+        model = Seq2SeqConvGRU(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            lock_cnn=False, # 锁定CNN层
+            gru_hidden_dim=128,
+            gru_layers=2,
+            **model_params['model_kwargs']
+        ).to(device)
     else:
         raise ValueError('Incorrect model_type specified:  %s' % (model_params['model_type'],))
 
@@ -350,7 +360,7 @@ class GRUModel(nn.Module):
         self.num_layers = num_layers
 
         # 定义GRU层
-        self.gru = nn.GRU(input_dim, hidden_dim, num_layers, batch_first=True)
+        self.gru = nn.GRU(input_dim, hidden_dim, num_layers, batch_first=True,bidirectional=True)
 
         # 定义全连接层
         self.fc = nn.Linear(hidden_dim, output_dim)
@@ -618,4 +628,63 @@ class ConvTransformer(nn.Module):
         conv_output = self.conv_model(conv_input)
         transformer_input = conv_output.view(batch_size, timesteps, -1)
         output = self.transformer(transformer_input)
+        return output
+
+
+class Seq2SeqConvGRU(nn.Module):
+    def __init__(
+            self,
+            in_dim,
+            in_channels,
+            out_dim,
+            lock_cnn=False,
+            gru_hidden_dim=128,
+            gru_layers=2,
+            conv_layers=[16, 16, 16],
+            conv_kernel_sizes=[5, 5, 5],
+            fc_layers=[128,128],
+            activation='relu',
+            apply_batchnorm=False,
+            dropout=0.0,
+            cnn_pretained=None,
+    ):
+        super(Seq2SeqConvGRU, self).__init__()
+        self.conv_model = CNN(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            conv_layers=conv_layers,
+            conv_kernel_sizes=conv_kernel_sizes,
+            fc_layers=fc_layers,
+            activation=activation,
+            apply_batchnorm=apply_batchnorm,
+            dropout=dropout
+        )
+        if cnn_pretained:
+            self.conv_model.load_state_dict(torch.load(cnn_pretained))
+        if lock_cnn:
+            for param in self.conv_model.parameters():
+                param.requires_grad = False
+
+        self.encoder = GRUModel(
+            input_dim=fc_layers[-1],
+            hidden_dim=gru_hidden_dim,
+            output_dim=gru_hidden_dim,  # Encoder output is the hidden state size
+            num_layers=gru_layers
+        )
+        self.decoder = GRUModel(
+            input_dim=gru_hidden_dim,
+            hidden_dim=gru_hidden_dim,
+            output_dim=out_dim,
+            num_layers=gru_layers
+        )
+
+    def forward(self, x):
+        batch_size, timesteps, channel_x, h_x, w_x = x.shape
+        conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
+        conv_output = self.conv_model(conv_input)
+        gru_input = conv_output.view(batch_size, timesteps, -1)
+        encoder_output = self.encoder(gru_input)
+        # Decoding step (you might want to use encoder_output in a specific way here)
+        output = self.decoder(encoder_output)
         return output
