@@ -665,6 +665,7 @@ class Seq2SeqConvGRU(nn.Module):
         if lock_cnn:
             for param in self.conv_model.parameters():
                 param.requires_grad = False
+        self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
 
         self.encoder = GRUModel(
             input_dim=fc_layers[-1],
