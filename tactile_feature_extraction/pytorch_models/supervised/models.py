@@ -330,6 +330,32 @@ class LSTMModel(nn.Module):
         out = self.fc(out[:, -1, :])  # 只用最后一个时间步的输出进行预测
         return out
 
+
+class GRUModel(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim, num_layers):
+        super(GRUModel, self).__init__()
+        self.input_dim = input_dim
+        self.hidden_dim = hidden_dim
+        self.output_dim = output_dim
+        self.num_layers = num_layers
+
+        # 定义GRU层
+        self.gru = nn.GRU(input_dim, hidden_dim, num_layers, batch_first=True)
+
+        # 定义全连接层
+        self.fc = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x):
+        # 初始化隐藏状态
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device)
+
+        # 使用GRU进行前向传播
+        out, _ = self.gru(x, h0)
+
+        # 只使用最后一个时间步的输出进行预测
+        out = self.fc(out[:, -1, :])
+        return out
+
 class TransformerModel(nn.Module):
     def __init__(self, input_dim, d_model, nhead, num_encoder_layers, dim_feedforward, output_dim, dropout=0.1):
         super(TransformerModel, self).__init__()
@@ -469,6 +495,7 @@ class ConvLstm(nn.Module):
         # output = self.output_layer(lstm_output)
         return output
 
+class ConvLstm_2(nn.Module):
 class ConvTransformer(nn.Module):
     def __init__(
             self,

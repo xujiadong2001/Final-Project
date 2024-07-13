@@ -84,7 +84,7 @@ def launch():
             features_dir = 'collect_331_5D_surface/features'
             labels_dir = 'collect_331_5D_surface/time_series'
             frame_indices = 'frame_numbers.json'
-            n_frames = 5  # 前n帧
+            n_frames = 20  # 前n帧
             # set generators and loaders
             train_generator = DataGenerator(
                 features_dir,
