@@ -566,6 +566,74 @@ class ConvGRU(nn.Module):
         output = self.GRU(gru_input)
         return output
 
+class Seq2SeqConvGRU(nn.Module):
+    def __init__(
+            self,
+            in_dim,
+            in_channels,
+            out_dim,
+            lock_cnn=False,
+            gru_hidden_dim=128,
+            gru_layers=2,
+            conv_layers=[16, 16, 16],
+            conv_kernel_sizes=[5, 5, 5],
+            fc_layers=[128,128],
+            activation='relu',
+            apply_batchnorm=False,
+            dropout=0.0,
+            cnn_pretained=None,
+    ):
+        super(Seq2SeqConvGRU, self).__init__()
+        self.conv_model = CNN(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            conv_layers=conv_layers,
+            conv_kernel_sizes=conv_kernel_sizes,
+            fc_layers=fc_layers,
+            activation=activation,
+            apply_batchnorm=apply_batchnorm,
+            dropout=dropout
+        )
+        if cnn_pretained:
+            self.conv_model.load_state_dict(torch.load(cnn_pretained))
+        if lock_cnn:
+            for param in self.conv_model.parameters():
+                param.requires_grad = False
+        self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
+
+        self.hidden_dim = gru_hidden_dim
+        self.num_layers = gru_layers
+
+        self.encoder = nn.GRU(
+            input_size=fc_layers[-1],
+            hidden_size=gru_hidden_dim,
+            num_layers=gru_layers,
+            batch_first=True
+        )
+        self.decoder = nn.GRU(
+            input_size=fc_layers[-1],
+            hidden_size=gru_hidden_dim,
+            num_layers=gru_layers,
+            batch_first=True
+        )
+        self.fc_out = nn.Linear(gru_hidden_dim, out_dim)
+
+    def forward(self, x):
+        batch_size, timesteps, channel_x, h_x, w_x = x.shape
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device)
+        conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
+        conv_output = self.conv_model(conv_input)
+        gru_input = conv_output.view(batch_size, timesteps, -1)
+        encoder_output,h0 = self.encoder(gru_input, h0)
+        # Decoding step (you might want to use encoder_output in a specific way here)
+        output,_ = self.decoder(encoder_output,h0)
+        output = self.fc_out(output[:, -1, :])  # Take only the output of the last timestep
+
+        return output
+    def initHidden(self):
+        return torch.zeros(1, 1, self.hidden_size)
+
 class ConvTransformer(nn.Module):
     def __init__(
             self,
@@ -631,61 +699,3 @@ class ConvTransformer(nn.Module):
         return output
 
 
-class Seq2SeqConvGRU(nn.Module):
-    def __init__(
-            self,
-            in_dim,
-            in_channels,
-            out_dim,
-            lock_cnn=False,
-            gru_hidden_dim=128,
-            gru_layers=2,
-            conv_layers=[16, 16, 16],
-            conv_kernel_sizes=[5, 5, 5],
-            fc_layers=[128,128],
-            activation='relu',
-            apply_batchnorm=False,
-            dropout=0.0,
-            cnn_pretained=None,
-    ):
-        super(Seq2SeqConvGRU, self).__init__()
-        self.conv_model = CNN(
-            in_dim=in_dim,
-            in_channels=in_channels,
-            out_dim=out_dim,
-            conv_layers=conv_layers,
-            conv_kernel_sizes=conv_kernel_sizes,
-            fc_layers=fc_layers,
-            activation=activation,
-            apply_batchnorm=apply_batchnorm,
-            dropout=dropout
-        )
-        if cnn_pretained:
-            self.conv_model.load_state_dict(torch.load(cnn_pretained))
-        if lock_cnn:
-            for param in self.conv_model.parameters():
-                param.requires_grad = False
-        self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
-
-        self.encoder = GRUModel(
-            input_dim=fc_layers[-1],
-            hidden_dim=gru_hidden_dim,
-            output_dim=gru_hidden_dim,  # Encoder output is the hidden state size
-            num_layers=gru_layers
-        )
-        self.decoder = GRUModel(
-            input_dim=gru_hidden_dim,
-            hidden_dim=gru_hidden_dim,
-            output_dim=out_dim,
-            num_layers=gru_layers
-        )
-
-    def forward(self, x):
-        batch_size, timesteps, channel_x, h_x, w_x = x.shape
-        conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
-        conv_output = self.conv_model(conv_input)
-        gru_input = conv_output.view(batch_size, timesteps, -1)
-        encoder_output = self.encoder(gru_input)
-        # Decoding step (you might want to use encoder_output in a specific way here)
-        output = self.decoder(encoder_output)
-        return output
