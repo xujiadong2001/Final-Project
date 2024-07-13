@@ -360,7 +360,7 @@ class GRUModel(nn.Module):
         self.num_layers = num_layers
 
         # 定义GRU层
-        self.gru = nn.GRU(input_dim, hidden_dim, num_layers, batch_first=True,bidirectional=True)
+        self.gru = nn.GRU(input_dim, hidden_dim, num_layers, batch_first=True)
 
         # 定义全连接层
         self.fc = nn.Linear(hidden_dim, output_dim)
