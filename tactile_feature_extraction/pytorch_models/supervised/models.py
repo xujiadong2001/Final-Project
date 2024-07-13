@@ -612,7 +612,7 @@ class Seq2SeqConvGRU(nn.Module):
             batch_first=True
         )
         self.decoder = nn.GRU(
-            input_size=fc_layers[-1],
+            input_size=gru_hidden_dim,
             hidden_size=gru_hidden_dim,
             num_layers=gru_layers,
             batch_first=True
