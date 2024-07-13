@@ -56,7 +56,8 @@ def evaluate_model(
         inputs = Variable(inputs).float().to(device)
 
         # forward pass
-        outputs = model(inputs)
+        with torch.no_grad():
+            outputs = model(inputs)
 
         # count correct for accuracy metric
         predictions_dict = label_encoder.decode_label(outputs)
