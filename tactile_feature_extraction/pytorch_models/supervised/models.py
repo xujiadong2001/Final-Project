@@ -89,6 +89,16 @@ def create_model(
             full_transformer=False,
             **model_params['model_kwargs']
         ).to(device)
+    elif model_params['model_type'] == 'conv_gru':
+        model = ConvGRU(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            lock_cnn=False, # 锁定CNN层
+            gru_hidden_dim=128,
+            gru_layers=2,
+            **model_params['model_kwargs']
+        ).to(device)
     else:
         raise ValueError('Incorrect model_type specified:  %s' % (model_params['model_type'],))
 
