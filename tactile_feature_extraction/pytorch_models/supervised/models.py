@@ -400,7 +400,7 @@ class GRUEncoder(nn.Module):
     def __init__(self, input_dim, hidden_dim):
         super(GRUEncoder, self).__init__()
         self.hidden_dim = hidden_dim
-        self.gru = nn.GRU(input_dim, hidden_dim)
+        self.gru = nn.GRU(input_dim, hidden_dim, batch_first=True)
 
     def forward(self, x):
         out, hidden = self.gru(x)
@@ -410,15 +410,16 @@ class GRUDecoder(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim):
         super(GRUDecoder, self).__init__()
         self.hidden_dim = hidden_dim
-        self.gru = nn.GRU(input_dim, hidden_dim)
+        self.gru = nn.GRU(input_dim, hidden_dim, batch_first=False)
         self.fc = nn.Linear(input_dim+2*hidden_dim, output_dim)
 
     def forward(self, x, hidden, context):
-        x_concat = torch.cat((x, context), dim=2) # [batch_size, 1, input_dim + hidden_dim]
+        # x: [batch_size, 1, input_dim]
+        x=x.permute(1, 0, 2) # [1, batch_size, input_dim]
+        x_concat = torch.cat((x, context), dim=2)
         out, hidden = self.gru(x_concat, hidden)
-        # x: [batch_size, 1, hidden_dim]
-        # hidden: [num_layers, batch_size, hidden_dim]
-        out = torch.cat(x.squeeze(1), hidden.squeeze(0), context.squeeze(1), dim=1)
+
+        out = torch.cat(x.squeeze(0), hidden.squeeze(0), context.squeeze(0), dim=1) # [batch_size, input_dim+2*hidden_dim]
         out = self.fc(out)
         return out, hidden
 
