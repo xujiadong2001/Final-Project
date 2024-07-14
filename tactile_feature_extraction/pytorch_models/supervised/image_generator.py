@@ -538,7 +538,7 @@ class PhotoDataset_Seq2Seq(torch.utils.data.Dataset):
             for i in range(num_frames):
                 input_photos_dirs = []
 
-
+                '''
                 if i == 0:
                     frame_index = frames[i]
                 elif frames[i] == frame_index + 1:  # 检查帧是否连续
@@ -548,6 +548,8 @@ class PhotoDataset_Seq2Seq(torch.utils.data.Dataset):
                         skip_labels.append(skip_num)
                         # 例如，如果当前帧是10，下一帧是12，那么11这一帧就是缺失的帧
                     frame_index = frames[i]
+                '''
+                # 跳标签理论上是没有影响的，跳图也没有影响，但是跳标签和跳图同时出现的情况下，可能会出现问题
 
                 photo_path = video_path + '/frame_' + str(frame_index) + '.png'
                 labels = []
@@ -563,7 +565,7 @@ class PhotoDataset_Seq2Seq(torch.utils.data.Dataset):
                         else:
                             continue
                     else:
-                        input_photos_dirs.insert(0, video_path + '/frame_' + str(frame_index - j) + '.png')
+                        input_photos_dirs.insert(0, video_path + '/frame_' + str(frames[i - j)] + '.png')
                         labels.insert(0, [fx_values[i - j], fy_values[i - j], fz_values[i - j]])
                 input_photos= []
                 for photo_path in input_photos_dirs:
@@ -592,11 +594,6 @@ class PhotoDataset_Seq2Seq(torch.utils.data.Dataset):
                 input_photos = np.stack(input_photos) # shape = (n_frames, 1, width, height)
                 labels = np.array(labels) # shape = (n_frames, 3)
                 samples.append((input_photos, labels))
-
-                if skip_labels!=[]:
-                    print(skip_labels)
-                    print(video_path)
-                    skip_labels = []
 
         return samples
 
