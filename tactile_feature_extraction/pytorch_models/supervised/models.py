@@ -419,7 +419,7 @@ class GRUDecoder(nn.Module):
         x_concat = torch.cat((x, context), dim=2)
         out, hidden = self.gru(x_concat, hidden)
 
-        out = torch.cat(x.squeeze(0), hidden.squeeze(0), context.squeeze(0), dim=1) # [batch_size, input_dim+2*hidden_dim]
+        out = torch.cat((x.squeeze(0), hidden.squeeze(0), context.squeeze(0)), dim=1) # [batch_size, input_dim+2*hidden_dim]
         out = self.fc(out)
         return out, hidden
 
