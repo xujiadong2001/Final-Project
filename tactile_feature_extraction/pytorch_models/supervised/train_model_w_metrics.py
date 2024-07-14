@@ -137,9 +137,9 @@ def train_model_w_metrics(
                 # decode predictions into label
                 if model_type == 'seq2seq_gru': # [batch_size, timesteps, out_dim]
                     outputs = outputs_tmp[:, -1, :] # [batch_size, out_dim]
-                    print(labels_dict['Fx'])
-                    print(labels_dict['Fx'].shape)
-                    labels_dict = {k: v[:, -1, :] for k, v in labels_dict.items()}
+                    # label shape [batch_size, timesteps]
+                    # 取最后一个timestep的label
+                    labels_dict = {k: v[:, -1] for k, v in labels_dict.items()}
 
                 predictions_dict = label_encoder.decode_label(outputs)
 
