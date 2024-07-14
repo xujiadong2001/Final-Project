@@ -15,8 +15,8 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 def train_model_w_metrics(
-    model,
     model_type,
+    model,
     label_encoder,
     train_generator,
     val_generator,
