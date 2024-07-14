@@ -60,8 +60,6 @@ def evaluate_model(
         with torch.no_grad():
             outputs = model(inputs)
         if model_type == 'seq2seq_gru':
-            print(outputs.shape)
-            outputs = outputs[:, -1, :] # [batch_size, out_dim]
             labels_dict = {k: v[:, -1] for k, v in labels_dict.items()}
         # count correct for accuracy metric
         predictions_dict = label_encoder.decode_label(outputs)
