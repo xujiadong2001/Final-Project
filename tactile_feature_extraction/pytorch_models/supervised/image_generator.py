@@ -603,8 +603,8 @@ class PhotoDataset_Seq2Seq(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         frames_data, label = self.samples[idx]
 
-        labels = {'Fx': label[0], 'Fy': label[1], 'Fz': label[2]}
-        print(label[0].shape)
+        labels = {'Fx': label[:, 0], 'Fy': label[:, 1], 'Fz': label[:, 2]}
+
         sample = {'images': torch.tensor(frames_data, dtype=torch.float32), 'labels': labels}
         return sample
 

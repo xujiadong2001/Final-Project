@@ -205,14 +205,12 @@ class FTPoseEncoder:
                 ulim = self.ft_ulims_torch[FT_LABEL_NAMES.index(label_name)]
                 norm_target = (((target - llim) / (ulim - llim)) * 2) - 1
 
-                print(norm_target.shape)
 
                 encoded_pose.append(norm_target.unsqueeze(dim=1))
 
         # combine targets to make one label tensor
         labels = torch.cat(encoded_pose, 1)
 
-        print(labels.shape)
 
         return labels
 
