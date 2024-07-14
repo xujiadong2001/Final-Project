@@ -113,9 +113,6 @@ def train_model_w_metrics(
                     else:
                         outputs = model(inputs)
 
-            print(outputs.shape)
-            print(labels.shape)
-
             loss_size = loss(outputs, labels)
             epoch_batch_loss.append(loss_size.item())
 
@@ -130,6 +127,8 @@ def train_model_w_metrics(
                 # decode predictions into label
                 if model_type == 'seq2seq_gru': # [batch_size, timesteps, out_dim]
                     outputs = outputs[:, -1, :] # [batch_size, out_dim]
+                    print(labels_dict['Fx'])
+                    print(labels_dict['Fx'].shape)
                     labels_dict = {k: v[:, -1, :] for k, v in labels_dict.items()}
 
                 predictions_dict = label_encoder.decode_label(outputs)

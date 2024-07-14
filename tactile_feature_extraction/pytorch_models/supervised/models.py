@@ -473,7 +473,7 @@ class Seq2SeqGRU(nn.Module):
             outputs[:, t, :] = output
         # outputs shape [batch_size, timesteps, out_dim]
         # labels shape [batch_size, out_dim,timesteps]
-        outputs = outputs.permute(0, 2, 1)
+        # outputs = outputs.permute(0, 2, 1)
         if output_last:
             return output
         else:
