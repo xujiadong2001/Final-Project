@@ -50,12 +50,12 @@ def launch():
             model_params = setup_model(model_type, save_dir)
             learning_params, image_processing_params, frame_processing_params, augmentation_params = setup_learning(save_dir)
 
-            n_frames = 5  # 前n帧
+            n_frames = 10  # 前n帧
 
             if model_type != 'conv_lstm' and model_type != 'conv_transformer' and model_type != 'conv_gru' and model_type != 'seq2seq_conv_gru':
                 DataGenerator = PhotoDataset
             else:
-                if n_frames <= 5:
+                if n_frames <= 20:
                     DataGenerator = PhotoDataset_ConvLstm
                 else:
                     DataGenerator = PhotoDataset_ConvLstm_2
