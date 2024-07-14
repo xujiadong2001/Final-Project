@@ -472,6 +472,7 @@ class Seq2SeqGRU(nn.Module):
             output, hidden = self.decoder(x, hidden, context)
             outputs[:, t, :] = output
         if output_last:
+            print('输出最后一个时间步的预测值')
             return output
         else:
             return outputs

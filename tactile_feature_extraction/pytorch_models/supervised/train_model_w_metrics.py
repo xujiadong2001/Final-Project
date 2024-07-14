@@ -112,6 +112,10 @@ def train_model_w_metrics(
                         outputs = model(inputs, output_last=False)
                     else:
                         outputs = model(inputs)
+
+            print(outputs.shape)
+            print(labels.shape)
+
             loss_size = loss(outputs, labels)
             epoch_batch_loss.append(loss_size.item())
 
