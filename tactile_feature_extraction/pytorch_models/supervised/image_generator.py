@@ -565,7 +565,7 @@ class PhotoDataset_Seq2Seq(torch.utils.data.Dataset):
                         else:
                             continue
                     else:
-                        input_photos_dirs.insert(0, video_path + '/frame_' + str(frames[i - j)] + '.png')
+                        input_photos_dirs.insert(0, video_path + '/frame_' + str(frames[i - j]) + '.png')
                         labels.insert(0, [fx_values[i - j], fy_values[i - j], fz_values[i - j]])
                 input_photos= []
                 for photo_path in input_photos_dirs:
