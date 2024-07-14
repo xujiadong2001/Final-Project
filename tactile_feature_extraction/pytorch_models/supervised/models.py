@@ -410,7 +410,7 @@ class GRUDecoder(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim):
         super(GRUDecoder, self).__init__()
         self.hidden_dim = hidden_dim
-        self.gru = nn.GRU(input_dim, hidden_dim, batch_first=False)
+        self.gru = nn.GRU(input_dim+hidden_dim, hidden_dim, batch_first=False)
         self.fc = nn.Linear(input_dim+2*hidden_dim, output_dim)
 
     def forward(self, x, hidden, context):
