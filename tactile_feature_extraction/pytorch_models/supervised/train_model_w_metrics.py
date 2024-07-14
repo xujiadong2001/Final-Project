@@ -47,10 +47,7 @@ def train_model_w_metrics(
     n_val_batches = len(val_loader)
 
     # define loss
-    if model_type != 'seq2seq_gru':
-        loss = nn.MSELoss()
-    else:
-        loss = nn.CrossEntropyLoss()
+    loss = nn.MSELoss()
 
     # define optimizer
     optimizer = optim.Adam(
