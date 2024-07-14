@@ -537,7 +537,7 @@ class PhotoDataset_Seq2Seq(torch.utils.data.Dataset):
 
             for i in range(num_frames):
                 input_photos_dirs = []
-
+                frame_index = frames[i]
                 '''
                 if i == 0:
                     frame_index = frames[i]
