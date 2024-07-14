@@ -99,7 +99,7 @@ def create_model(
             gru_layers=2,
             **model_params['model_kwargs']
         ).to(device)
-    elif model_params['model_type'] == 'seq2seq_conv_gru':
+    elif model_params['model_type'] == 'seq2seq_gru':
         model = Seq2SeqGRU(
             in_dim=in_dim,
             in_channels=in_channels,
