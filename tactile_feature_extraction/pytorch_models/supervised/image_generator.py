@@ -536,7 +536,10 @@ class PhotoDataset_Seq2Seq(torch.utils.data.Dataset):
                 input_photos_dirs = []
 
                 jump_label = False
-                if frames[i] == frame_index + 1:
+
+                if i == 0:
+                    frame_index = frames[i]
+                elif frames[i] == frame_index + 1:
                     jump_label = True
 
                 frame_index = frames[i]
