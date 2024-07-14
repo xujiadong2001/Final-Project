@@ -101,6 +101,11 @@ def train_model_w_metrics(
                 optimizer.zero_grad()
                 if model_type == 'seq2seq_gru':
                     outputs = model(inputs, output_last=False)
+                    # 合并batch_size和timesteps
+                    outputs = outputs.view(-1, outputs.size(-1))
+                    # labels shape [batch_size, out_dim,timesteps]
+                    labels= labels.permute(0,2,1) # [batch_size, timesteps, out_dim]
+                    labels = labels.view(-1, labels.size(-1))
                 else:
                     outputs = model(inputs)
 
