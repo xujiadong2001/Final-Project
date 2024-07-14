@@ -471,8 +471,10 @@ class Seq2SeqGRU(nn.Module):
             x = gru_input[:, t, :].unsqueeze(1)
             output, hidden = self.decoder(x, hidden, context)
             outputs[:, t, :] = output
+        # outputs shape [batch_size, timesteps, out_dim]
+        # labels shape [batch_size, out_dim,timesteps]
+        outputs = outputs.permute(0, 2, 1)
         if output_last:
-            print('输出最后一个时间步的预测值')
             return output
         else:
             return outputs
