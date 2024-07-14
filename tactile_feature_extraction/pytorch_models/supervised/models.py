@@ -460,7 +460,7 @@ class Seq2SeqGRU(nn.Module):
         self.out_dim = out_dim
         self.encoder = GRUEncoder(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim)
         self.decoder = GRUDecoder(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim, output_dim=out_dim)
-    def forward(self, x, output_last=True):
+    def forward(self, x, output_last=True,target=None):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
         outputs = torch.zeros(batch_size, timesteps, self.out_dim).to(x.device) # [batch_size, timesteps, out_dim]
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
@@ -473,7 +473,10 @@ class Seq2SeqGRU(nn.Module):
         for t in range(0, timesteps):
             output, hidden = self.decoder(x, hidden, context)
             outputs[:, t, :] = output
-            x = output.unsqueeze(1) # [batch_size, 1, out_dim]
+            if target is not None:
+                x = target[:, t, :].unsqueeze(1)
+            else:
+                x = output.unsqueeze(1) # [batch_size, 1, out_dim]
 
         # outputs shape [batch_size, timesteps, out_dim]
         # labels shape [batch_size, out_dim,timesteps]
