@@ -410,13 +410,14 @@ class GRUDecoder(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim):
         super(GRUDecoder, self).__init__()
         self.hidden_dim = hidden_dim
-        self.gru = nn.GRU(input_dim+hidden_dim, hidden_dim, batch_first=False)
-        self.fc = nn.Linear(input_dim+2*hidden_dim, output_dim)
+        self.gru = nn.GRU(output_dim+hidden_dim, hidden_dim, batch_first=False)
+        self.fc = nn.Linear(output_dim+2*hidden_dim, output_dim) # x现在是上一步的输出
 
     def forward(self, x, hidden, context):
-        # x: [batch_size, 1, input_dim]
-        x=x.permute(1, 0, 2) # [1, batch_size, input_dim]
-        x_concat = torch.cat((x, context), dim=2)
+        # x: [batch_size, 1, output_dim] 前一步的输出
+        x=x.permute(1, 0, 2) # [1, batch_size, output_dim]
+        # hidden: [num_layers, batch_size, hidden_dim]
+        x_concat = torch.cat((x, context), dim=2) # [1, batch_size, input_dim+hidden_dim]
         out, hidden = self.gru(x_concat, hidden)
 
         out = torch.cat((x.squeeze(0), hidden.squeeze(0), context.squeeze(0)), dim=1) # [batch_size, input_dim+2*hidden_dim]
@@ -467,10 +468,13 @@ class Seq2SeqGRU(nn.Module):
         gru_input = conv_output.view(batch_size, timesteps, -1)
         hidden = self.encoder(gru_input)
         context=hidden
+        # x 全零向量
+        x = torch.zeros(batch_size, 1, self.out_dim).to(x.device)
         for t in range(0, timesteps):
-            x = gru_input[:, t, :].unsqueeze(1)
             output, hidden = self.decoder(x, hidden, context)
             outputs[:, t, :] = output
+            x = output.unsqueeze(1) # [batch_size, 1, out_dim]
+
         # outputs shape [batch_size, timesteps, out_dim]
         # labels shape [batch_size, out_dim,timesteps]
         # outputs = outputs.permute(0, 2, 1)
