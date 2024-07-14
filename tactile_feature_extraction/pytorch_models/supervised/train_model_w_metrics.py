@@ -16,6 +16,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 def train_model_w_metrics(
     model,
+    model_type,
     label_encoder,
     train_generator,
     val_generator,
@@ -46,7 +47,10 @@ def train_model_w_metrics(
     n_val_batches = len(val_loader)
 
     # define loss
-    loss = nn.MSELoss()
+    if model_type != 'seq2seq_gru':
+        loss = nn.MSELoss()
+    else:
+        loss = nn.CrossEntropyLoss()
 
     # define optimizer
     optimizer = optim.Adam(
@@ -95,12 +99,19 @@ def train_model_w_metrics(
             # set the parameter gradients to zero
             if training:
                 optimizer.zero_grad()
-                outputs = model(inputs)
+                if model_type == 'seq2seq_gru':
+                    outputs = model(inputs, output_last=False)
+                else:
+                    outputs = model(inputs)
+
 
             # forward pass, backward pass, optimize
             else:
                 with torch.no_grad():
-                    outputs = model(inputs)
+                    if model_type == 'seq2seq_gru':
+                        outputs = model(inputs, output_last=False)
+                    else:
+                        outputs = model(inputs)
             loss_size = loss(outputs, labels)
             epoch_batch_loss.append(loss_size.item())
 
@@ -113,6 +124,10 @@ def train_model_w_metrics(
             if not training or calculate_train_metrics:
 
                 # decode predictions into label
+                if model_type == 'seq2seq_gru': # [batch_size, timesteps, out_dim]
+                    outputs = outputs[:, -1, :] # [batch_size, out_dim]
+                    labels_dict = {k: v[:, -1, :] for k, v in labels_dict.items()}
+
                 predictions_dict = label_encoder.decode_label(outputs)
 
                 # append predictions and labels to dataframes

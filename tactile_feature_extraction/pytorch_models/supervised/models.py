@@ -100,7 +100,7 @@ def create_model(
             **model_params['model_kwargs']
         ).to(device)
     elif model_params['model_type'] == 'seq2seq_conv_gru':
-        model = Seq2SeqConvGRU(
+        model = Seq2SeqGRU(
             in_dim=in_dim,
             in_channels=in_channels,
             out_dim=out_dim,
@@ -396,6 +396,84 @@ class TransformerModel(nn.Module):
         output = self.fc_out(output[:, -1, :])
         return output
 
+class GRUEncoder(nn.Module):
+    def __init__(self, input_dim, hidden_dim):
+        super(GRUEncoder, self).__init__()
+        self.hidden_dim = hidden_dim
+        self.gru = nn.GRU(input_dim, hidden_dim)
+
+    def forward(self, x):
+        out, hidden = self.gru(x)
+        return hidden
+
+class GRUDecoder(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super(GRUDecoder, self).__init__()
+        self.hidden_dim = hidden_dim
+        self.gru = nn.GRU(input_dim, hidden_dim)
+        self.fc = nn.Linear(input_dim+2*hidden_dim, output_dim)
+
+    def forward(self, x, hidden, context):
+        x_concat = torch.cat((x, context), dim=2) # [batch_size, 1, input_dim + hidden_dim]
+        out, hidden = self.gru(x_concat, hidden)
+        # x: [batch_size, 1, hidden_dim]
+        # hidden: [num_layers, batch_size, hidden_dim]
+        out = torch.cat(x.squeeze(1), hidden.squeeze(0), context.squeeze(1), dim=1)
+        out = self.fc(out)
+        return out, hidden
+
+class Seq2SeqGRU(nn.Module):
+    def __init__(
+            self,
+            in_dim,
+            in_channels,
+            out_dim,
+            lock_cnn=False,
+            gru_hidden_dim=128,
+            gru_layers=2,
+            conv_layers=[16, 16, 16],
+            conv_kernel_sizes=[5, 5, 5],
+            fc_layers=[128, 128],
+            activation='relu',
+            apply_batchnorm=False,
+            dropout=0.0
+        ):
+        super(Seq2SeqGRU, self).__init__()
+        self.conv_model = CNN(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            conv_layers=conv_layers,
+            conv_kernel_sizes=conv_kernel_sizes,
+            fc_layers=fc_layers,
+            activation=activation,
+            apply_batchnorm=apply_batchnorm,
+            dropout=dropout
+        )
+        if lock_cnn:
+            for param in self.conv_model.parameters():
+                param.requires_grad = False
+        # 移除最后一层全连接层
+        self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
+        self.encoder = GRUEncoder(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim)
+        self.decoder = GRUDecoder(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim, output_dim=out_dim)
+    def forward(self, x, output_last=True):
+        batch_size, timesteps, channel_x, h_x, w_x = x.shape
+        outputs = torch.zeros(batch_size, timesteps, self.out_dim).to(x.device) # [batch_size, timesteps, out_dim]
+        conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
+        conv_output = self.conv_model(conv_input)
+        gru_input = conv_output.view(batch_size, timesteps, -1)
+        hidden = self.encoder(gru_input)
+        context=hidden
+        for t in range(0, timesteps):
+            x = gru_input[:, t, :].unsqueeze(1)
+            output, hidden = self.decoder(x, hidden, context)
+            outputs[:, t, :] = output
+        if output_last:
+            return output
+        else:
+            return outputs
+
 
 class FullTransformerModel(nn.Module):
     def __init__(self, input_dim, d_model, nhead, num_encoder_layers, num_decoder_layers, dim_feedforward, output_dim, dropout=0.1):
@@ -566,6 +644,7 @@ class ConvGRU(nn.Module):
         output = self.GRU(gru_input)
         return output
 
+'''
 class Seq2SeqConvGRU(nn.Module):
     def __init__(
             self,
@@ -633,6 +712,7 @@ class Seq2SeqConvGRU(nn.Module):
         return output
     def initHidden(self):
         return torch.zeros(1, 1, self.hidden_size)
+'''
 
 class ConvTransformer(nn.Module):
     def __init__(
@@ -697,5 +777,4 @@ class ConvTransformer(nn.Module):
         transformer_input = conv_output.view(batch_size, timesteps, -1)
         output = self.transformer(transformer_input)
         return output
-
 

@@ -472,6 +472,141 @@ class PhotoDataset_ConvLstm(torch.utils.data.Dataset):
         sample = {'images': torch.tensor(frames_data, dtype=torch.float32), 'labels': labels}
         return sample
 
+class PhotoDataset_Seq2Seq(torch.utils.data.Dataset):
+    def __init__(
+            self,
+            photos_dir,
+            labels_dir,
+            n_frames,
+            padding=True,
+            dims=(128, 128),
+            bbox=None,
+            stdiz=False,
+            normlz=False,
+            blur=None,
+            thresh=None,
+            rshift=None,
+            rzoom=None,
+            brightlims=None,
+            noise_var=None,
+    ):
+        self.photos_dir = photos_dir
+        self.labels_dir = labels_dir
+        self.n_frames = n_frames
+        self.padding = padding
+
+        self._dims = dims
+        self._bbox = bbox
+        self._stdiz = stdiz
+        self._normlz = normlz
+        self._blur = blur
+        self._thresh = thresh
+        self._rshift = rshift
+        self._rzoom = rzoom
+        self._brightlims = brightlims
+        self._noise_var = noise_var
+
+        self.samples = self._create_samples()
+
+    def _create_samples(self):
+        samples = []
+        videos = [f for f in os.listdir(self.photos_dir)]
+        for video in tqdm(videos):
+            video_path = os.path.join(self.photos_dir, video)
+            label_file = video + '.pkl'
+            label_path = os.path.join(self.labels_dir, label_file)
+
+            # 检查标签文件是否存在
+            if not os.path.exists(label_path):
+                print(f"Label file {label_path} not found. Skipping.")
+                continue
+
+            with open(label_path, 'rb') as f:
+                labels = pickle.load(f)
+
+            # 从标签字典中提取帧编号和对应的Fx, Fy, Fz值
+            frames = labels['frame']
+
+            fx_values = labels['fx']
+            fy_values = labels['fy']
+            fz_values = labels['fz']
+            num_frames = len(frames)
+            label_index = 0
+            for i in range(num_frames):
+                input_photos_dirs = []
+
+                jump_label = False
+                if frames[i] == frame_index + 1:
+                    jump_label = True
+
+                frame_index = frames[i]
+                '''
+                if i == 0:
+                    frame_index = frames[i]
+                elif frames[i] == frame_index + 1:  # 检查帧是否连续
+                    frame_index = frames[i]  # 获取当前帧的索引
+                else:
+                    label_index = 0
+                    frame_index = frames[i]
+                '''
+
+                photo_path = video_path + '/frame_' + str(frame_index) + '.png'
+                labels = []
+                if not os.path.exists(photo_path):
+                    label_index = 0
+                    continue
+
+                if jump_label:
+                    print('jump label')
+
+                for j in range(self.n_frames):
+                    if label_index - j < 0:
+                        if self.padding:
+                            input_photos_dirs.insert(0, video_path + '/frame_' + str(frames[i - label_index]) + '.png')
+                            labels.insert(0, [fx_values[i - label_index], fy_values[i - label_index], fz_values[i - label_index]])
+                        else:
+                            continue
+                    else:
+                        input_photos_dirs.insert(0, video_path + '/frame_' + str(frame_index - j) + '.png')
+                        labels.insert(0, [fx_values[i - j], fy_values[i - j], fz_values[i - j]])
+                input_photos= []
+                for photo_path in input_photos_dirs:
+                    photo= cv2.imread(photo_path)
+                    # preprocess/augment image
+                    processed_image = process_image(
+                        photo,
+                        gray=True,
+                        bbox=self._bbox,
+                        dims=self._dims,
+                        stdiz=self._stdiz,
+                        normlz=self._normlz,
+                        blur=self._blur,
+                        thresh=self._thresh,
+                    )
+                    processed_image = augment_image(
+                        processed_image,
+                        rshift=self._rshift,
+                        rzoom=self._rzoom,
+                        brightlims=self._brightlims,
+                        noise_var=self._noise_var
+                    )
+                    # put the channel into first axis because pytorch
+                    processed_image = np.rollaxis(processed_image, 2, 0)
+                    input_photos.append(processed_image)
+                input_photos = np.stack(input_photos) # shape = (n_frames, 1, width, height)
+                labels = np.array(labels) # shape = (n_frames, 3)
+                samples.append((input_photos, labels))
+        return samples
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        frames_data, label = self.samples[idx]
+
+        labels = {'Fx': label[0], 'Fy': label[1], 'Fz': label[2]}
+        sample = {'images': torch.tensor(frames_data, dtype=torch.float32), 'labels': labels}
+        return sample
 
 class PhotoDataset_ConvLstm_2(torch.utils.data.Dataset):
     def __init__(

@@ -24,6 +24,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 def evaluate_model(
     task,
+    model_type,
     model,
     label_encoder,
     generator,

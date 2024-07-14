@@ -10,7 +10,7 @@ from tactile_feature_extraction.model_learning.evaluate_model import evaluate_mo
 
 from tactile_feature_extraction.pytorch_models.supervised.models import create_model
 from tactile_feature_extraction.pytorch_models.supervised.train_model_w_metrics import train_model_w_metrics
-from tactile_feature_extraction.pytorch_models.supervised.image_generator import PhotoDataset, PhotoDataset_ConvLstm, PhotoDataset_ConvLstm_2
+from tactile_feature_extraction.pytorch_models.supervised.image_generator import PhotoDataset, PhotoDataset_ConvLstm, PhotoDataset_ConvLstm_2, PhotoDataset_Seq2Seq
 
 
 from tactile_feature_extraction.utils.utils_plots import ErrorPlotter
@@ -52,13 +52,16 @@ def launch():
 
             n_frames = 10  # 前n帧
 
-            if model_type != 'conv_lstm' and model_type != 'conv_transformer' and model_type != 'conv_gru' and model_type != 'seq2seq_conv_gru':
-                DataGenerator = PhotoDataset
-            else:
+            if model_type == 'conv_lstm' or model_type == 'conv_transformer' or model_type == 'conv_gru':
                 if n_frames <= 20:
                     DataGenerator = PhotoDataset_ConvLstm
                 else:
                     DataGenerator = PhotoDataset_ConvLstm_2
+
+            elif model_type == 'seq2seq_gru':
+                DataGenerator = PhotoDataset_Seq2Seq
+            else:
+                DataGenerator = PhotoDataset
 
             train_processing_params = {**image_processing_params, **augmentation_params}
             val_processing_params = image_processing_params
@@ -118,6 +121,7 @@ def launch():
 
             # Train model
             train_model_w_metrics(
+                model_type,
                 model,
                 label_encoder,
                 train_generator,
@@ -132,6 +136,7 @@ def launch():
             # perform a final evaluation using the best modely
             evaluate_model(
                 task,
+                model_type,
                 model,
                 label_encoder,
                 val_generator,
