@@ -455,6 +455,7 @@ class Seq2SeqGRU(nn.Module):
                 param.requires_grad = False
         # 移除最后一层全连接层
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
+        self.out_dim = out_dim
         self.encoder = GRUEncoder(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim)
         self.decoder = GRUDecoder(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim, output_dim=out_dim)
     def forward(self, x, output_last=True):

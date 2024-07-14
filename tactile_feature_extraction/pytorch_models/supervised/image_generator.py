@@ -532,35 +532,28 @@ class PhotoDataset_Seq2Seq(torch.utils.data.Dataset):
             fz_values = labels['fz']
             num_frames = len(frames)
             label_index = 0
+
+            skip_labels = []
+
             for i in range(num_frames):
                 input_photos_dirs = []
 
-                jump_label = False
 
-                if i == 0:
-                    frame_index = frames[i]
-                elif frames[i] != frame_index + 1:
-                    jump_label = True
-
-                frame_index = frames[i]
-                '''
                 if i == 0:
                     frame_index = frames[i]
                 elif frames[i] == frame_index + 1:  # 检查帧是否连续
                     frame_index = frames[i]  # 获取当前帧的索引
                 else:
-                    label_index = 0
+                    for skip_num in range(frame_index+1, frames[i]):
+                        skip_labels.append(skip_num)
+                        # 例如，如果当前帧是10，下一帧是12，那么11这一帧就是缺失的帧
                     frame_index = frames[i]
-                '''
 
                 photo_path = video_path + '/frame_' + str(frame_index) + '.png'
                 labels = []
                 if not os.path.exists(photo_path):
                     label_index = 0
                     continue
-
-                if jump_label:
-                    print('jump label')
 
                 for j in range(self.n_frames):
                     if label_index - j < 0:
@@ -599,6 +592,12 @@ class PhotoDataset_Seq2Seq(torch.utils.data.Dataset):
                 input_photos = np.stack(input_photos) # shape = (n_frames, 1, width, height)
                 labels = np.array(labels) # shape = (n_frames, 3)
                 samples.append((input_photos, labels))
+
+                if skip_labels!=[]:
+                    print(skip_labels)
+                    print(video_path)
+                    skip_labels = []
+
         return samples
 
     def __len__(self):
