@@ -481,7 +481,8 @@ class Seq2SeqGRU(nn.Module):
         # x 全零向量
         x = torch.zeros(batch_size, 1, self.out_dim).to(x.device)
         for t in range(0, timesteps):
-            output, hidden = self.decoder(x, hidden, context)
+            # output, hidden = self.decoder(x, hidden, context)
+            output, hidden = self.decoder(x, hidden)
             outputs[:, t, :] = output
             if target is not None:
                 x = target[:, t, :].unsqueeze(1)
