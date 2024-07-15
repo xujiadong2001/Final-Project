@@ -50,7 +50,7 @@ def launch():
             model_params = setup_model(model_type, save_dir)
             learning_params, image_processing_params, frame_processing_params, augmentation_params = setup_learning(save_dir)
 
-            n_frames = 10  # 前n帧
+            n_frames = 5  # 前n帧
 
             if model_type == 'conv_lstm' or model_type == 'conv_transformer' or model_type == 'conv_gru':
                 if n_frames <= 20:
