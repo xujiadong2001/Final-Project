@@ -407,13 +407,17 @@ class GRUEncoder(nn.Module):
         return hidden
 
 class GRUDecoder(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim):
+    def __init__(self, input_dim, hidden_dim, output_dim, activation='None'):
         super(GRUDecoder, self).__init__()
         self.hidden_dim = hidden_dim
         # self.gru = nn.GRU(output_dim+hidden_dim, hidden_dim, batch_first=False)
         self.gru = nn.GRU(output_dim , hidden_dim, batch_first=False)
         # self.fc = nn.Linear(output_dim+2*hidden_dim, output_dim) # x现在是上一步的输出
         self.fc = nn.Linear(hidden_dim, output_dim)  # x现在是上一步的输出
+        if activation == 'relu':
+            self.activation = nn.ReLU()
+        else:
+            self.activation = None
     '''
     def forward(self, x, hidden, context):
         # x: [batch_size, 1, output_dim] 前一步的输出
@@ -433,6 +437,8 @@ class GRUDecoder(nn.Module):
         # hidden: [num_layers, batch_size, hidden_dim]
         out, hidden = self.gru(x, hidden)
         out = self.fc(out[0])
+        if self.activation:
+            out = self.activation(out)
         return out, hidden
 class Seq2SeqGRU(nn.Module):
     def __init__(
@@ -469,7 +475,7 @@ class Seq2SeqGRU(nn.Module):
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
         self.out_dim = out_dim
         self.encoder = GRUEncoder(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim)
-        self.decoder = GRUDecoder(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim, output_dim=out_dim)
+        self.decoder = GRUDecoder(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim, output_dim=out_dim, activation='relu')
     def forward(self, x, output_last=True,target=None):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
         outputs = torch.zeros(batch_size, timesteps, self.out_dim).to(x.device) # [batch_size, timesteps, out_dim]
