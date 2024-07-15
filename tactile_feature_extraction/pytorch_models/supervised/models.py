@@ -410,9 +410,11 @@ class GRUDecoder(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim):
         super(GRUDecoder, self).__init__()
         self.hidden_dim = hidden_dim
-        self.gru = nn.GRU(output_dim+hidden_dim, hidden_dim, batch_first=False)
-        self.fc = nn.Linear(output_dim+2*hidden_dim, output_dim) # x现在是上一步的输出
-
+        # self.gru = nn.GRU(output_dim+hidden_dim, hidden_dim, batch_first=False)
+        self.gru = nn.GRU(output_dim , hidden_dim, batch_first=False)
+        # self.fc = nn.Linear(output_dim+2*hidden_dim, output_dim) # x现在是上一步的输出
+        self.fc = nn.Linear(hidden_dim, output_dim)  # x现在是上一步的输出
+    '''
     def forward(self, x, hidden, context):
         # x: [batch_size, 1, output_dim] 前一步的输出
         x=x.permute(1, 0, 2) # [1, batch_size, output_dim]
@@ -423,7 +425,15 @@ class GRUDecoder(nn.Module):
         out = torch.cat((x.squeeze(0), hidden.squeeze(0), context.squeeze(0)), dim=1) # [batch_size, input_dim+2*hidden_dim]
         out = self.fc(out)
         return out, hidden
+    '''
 
+    def forward(self, x, hidden):
+        # x: [batch_size, 1, output_dim] 前一步的输出
+        x = x.permute(1, 0, 2)  # [1, batch_size, output_dim]
+        # hidden: [num_layers, batch_size, hidden_dim]
+        out, hidden = self.gru(x, hidden)
+        out = self.fc(out[0])
+        return out, hidden
 class Seq2SeqGRU(nn.Module):
     def __init__(
             self,
