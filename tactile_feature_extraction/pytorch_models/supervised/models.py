@@ -277,7 +277,9 @@ class CNN3D(nn.Module):
         self.fc = nn.Sequential(*fc_modules)
 
     def forward(self, x):
-        x = self.cnn(x) # [batch_size, out_channels, h, w, d]
+        # x batch_size, timesteps, channel_x, h_x, w_x
+        x = x.permute(0, 2, 1, 3, 4)  # [batch_size, channel_x, timesteps, h_x, w_x]
+        x = self.cnn(x)
         x = x.reshape(x.shape[0], -1)
         x = self.fc(x)
         return x
