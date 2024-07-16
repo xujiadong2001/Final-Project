@@ -173,7 +173,7 @@ def setup_model(model_type, save_dir):
     elif model_type == 'CNN3D':
         model_params['model_kwargs'] = {
             'conv_layers': [32, 32, 32, 32],
-            'conv_kernel_sizes': [11, 9, 7, 5],
+            'conv_kernel_sizes': [(3, 11, 11), (3, 9, 9), (3, 7, 7), (3, 5, 5)],
             'fc_layers': [512, 512],
             'activation': 'relu',
             'dropout': 0.0,
