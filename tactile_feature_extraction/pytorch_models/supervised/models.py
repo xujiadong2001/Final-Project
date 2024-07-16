@@ -109,6 +109,14 @@ def create_model(
             gru_layers=2,
             **model_params['model_kwargs']
         ).to(device)
+    elif model_params['model_type'] == 'CNN3D':
+        model = CNN3D(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            **model_params['model_kwargs']
+        ).to(device)
+
     else:
         raise ValueError('Incorrect model_type specified:  %s' % (model_params['model_type'],))
 
