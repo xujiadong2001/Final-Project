@@ -209,7 +209,7 @@ class CNN(nn.Module):
         x = self.fc(x)
         return x
 
-class 3DCNN(nn.Module):
+class CNN3D(nn.Module):
     def __init__(
         self,
         in_dim,
@@ -222,7 +222,7 @@ class 3DCNN(nn.Module):
         apply_batchnorm=False,
         dropout=0.0,
     ):
-        super(3DCNN, self).__init__()
+        super(CNN3D, self).__init__()
 
         assert len(conv_layers) > 0, "conv_layers must contain values"
         assert len(fc_layers) > 0, "fc_layers must contain values"
