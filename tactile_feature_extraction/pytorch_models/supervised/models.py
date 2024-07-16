@@ -114,6 +114,7 @@ def create_model(
             in_dim=in_dim,
             in_channels=in_channels,
             out_dim=out_dim,
+            n_frames=5,
             **model_params['model_kwargs']
         ).to(device)
 
@@ -223,6 +224,7 @@ class CNN3D(nn.Module):
         in_dim,
         in_channels,
         out_dim,
+        n_frames,
         conv_layers=[16, 16, 16],
         conv_kernel_sizes=[5, 5, 5],
         fc_layers=[128, 128],
@@ -268,7 +270,7 @@ class CNN3D(nn.Module):
 
         # compute shape out of cnn by doing one forward pass
         with torch.no_grad():
-            dummy_input = torch.zeros((1, in_channels, *in_dim))
+            dummy_input = torch.zeros((1, in_channels,n_frames, *in_dim))
             n_flatten = np.prod(self.cnn(dummy_input).shape)
 
         fc_modules = []
