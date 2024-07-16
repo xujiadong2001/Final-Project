@@ -209,6 +209,79 @@ class CNN(nn.Module):
         x = self.fc(x)
         return x
 
+class 3DCNN(nn.Module):
+    def __init__(
+        self,
+        in_dim,
+        in_channels,
+        out_dim,
+        conv_layers=[16, 16, 16],
+        conv_kernel_sizes=[5, 5, 5],
+        fc_layers=[128, 128],
+        activation='relu',
+        apply_batchnorm=False,
+        dropout=0.0,
+    ):
+        super(3DCNN, self).__init__()
+
+        assert len(conv_layers) > 0, "conv_layers must contain values"
+        assert len(fc_layers) > 0, "fc_layers must contain values"
+        assert len(conv_layers) == len(conv_kernel_sizes), "conv_layers must be same len as conv_kernel_sizes"
+
+        # add first layer to network
+        cnn_modules = []
+        cnn_modules.append(nn.Conv3d(in_channels, conv_layers[0], kernel_size=conv_kernel_sizes[0], stride=1, padding=2))
+        if apply_batchnorm:
+            cnn_modules.append(nn.BatchNorm3d(conv_layers[0]))
+        cnn_modules.append(nn.ReLU())
+        cnn_modules.append(nn.MaxPool3d(kernel_size=2, stride=2, padding=0))
+
+        # add the remaining conv layers by iterating through params
+        for idx in range(len(conv_layers) - 1):
+            cnn_modules.append(
+                nn.Conv3d(
+                    conv_layers[idx],
+                    conv_layers[idx + 1],
+                    kernel_size=conv_kernel_sizes[idx + 1],
+                    stride=1, padding=2)
+                )
+
+            if apply_batchnorm:
+                cnn_modules.append(nn.BatchNorm3d(conv_layers[idx+1]))
+
+            if activation == 'relu':
+                cnn_modules.append(nn.ReLU())
+            elif activation == 'elu':
+                cnn_modules.append(nn.ELU())
+            cnn_modules.append(nn.MaxPool3d(kernel_size=2, stride=2, padding=0))
+
+        # create cnn component of network
+        self.cnn = nn.Sequential(*cnn_modules)
+
+        # compute shape out of cnn by doing one forward pass
+        with torch.no_grad():
+            dummy_input = torch.zeros((1, in_channels, *in_dim))
+            n_flatten = np.prod(self.cnn(dummy_input).shape)
+
+        fc_modules = []
+        fc_modules.append(nn.Linear(n_flatten, fc_layers[0]))
+        fc_modules.append(nn.ReLU())
+        for idx in range(len(fc_layers) - 1):
+            fc_modules.append(nn.Linear(fc_layers[idx], fc_layers[idx + 1]))
+            if activation == 'relu':
+                fc_modules.append(nn.ReLU())
+            elif activation == 'elu':
+                fc_modules.append(nn.ELU())
+            fc_modules.append(nn.Dropout(dropout))
+        fc_modules.append(nn.Linear(fc_layers[-1], out_dim))
+        self.fc = nn.Sequential(*fc_modules)
+
+    def forward(self, x):
+        x = self.cnn(x) # [batch_size, out_channels, h, w, d]
+        x = x.reshape(x.shape[0], -1)
+        x = self.fc(x)
+        return x
+
 
 class NatureCNN(nn.Module):
     """
@@ -413,11 +486,13 @@ class GRUDecoder(nn.Module):
         # self.gru = nn.GRU(output_dim+hidden_dim, hidden_dim, batch_first=False)
         self.gru = nn.GRU(output_dim , hidden_dim, batch_first=False)
         # self.fc = nn.Linear(output_dim+2*hidden_dim, output_dim) # x现在是上一步的输出
-        self.fc = nn.Linear(hidden_dim, output_dim)  # x现在是上一步的输出
+        # self.fc = nn.Linear(hidden_dim, output_dim)  # x现在是上一步的输出
+        self.fc = nn.Linear(hidden_dim, hidden_dim)
         if activation == 'relu':
             self.activation = nn.ReLU()
         else:
             self.activation = None
+        self.fc2 = nn.Linear(hidden_dim, output_dim)
     '''
     def forward(self, x, hidden, context):
         # x: [batch_size, 1, output_dim] 前一步的输出
@@ -439,6 +514,9 @@ class GRUDecoder(nn.Module):
         out = self.fc(out[0])
         if self.activation:
             out = self.activation(out)
+
+        out = self.fc2(out)
+
         return out, hidden
 class Seq2SeqGRU(nn.Module):
     def __init__(
