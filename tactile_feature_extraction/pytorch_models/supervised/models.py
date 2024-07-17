@@ -712,9 +712,9 @@ class ConvLstm(nn.Module):
         output = self.Lstm(lstm_input) # [batch_size, timesteps, lstm_hidden_dim]
         # lstm_output = lstm_output[:, -1, :]
         # output = self.output_layer(lstm_output)
-        output = self.fc1(output)
-        output = self.activation(output)
-        output = self.fc2(output)
+        #output = self.fc1(output)
+        #output = self.activation(output)
+        # output = self.fc2(output)
         return output
 
 class ConvGRU(nn.Module):
@@ -756,9 +756,12 @@ class ConvGRU(nn.Module):
         self.GRU = GRUModel(
             input_dim=fc_layers[-1],
             hidden_dim=gru_hidden_dim,
-            output_dim=out_dim,
+            output_dim=gru_hidden_dim,
             num_layers=gru_layers
         )
+        self.fc = nn.Linear(gru_hidden_dim, 64)
+        self.activation = nn.ReLU()
+        self.fc2 = nn.Linear(64, out_dim)
         # self.output_layer = nn.Linear(lstm_hidden_dim, out_dim)
     def forward(self, x):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
@@ -766,6 +769,9 @@ class ConvGRU(nn.Module):
         conv_output = self.conv_model(conv_input)
         gru_input = conv_output.view(batch_size, timesteps, -1)
         output = self.GRU(gru_input)
+        output = self.fc(output)
+        output = self.activation(output)
+        output = self.fc2(output)
         return output
 
 '''
