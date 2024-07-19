@@ -96,7 +96,7 @@ def train_model_w_metrics(
             # set the parameter gradients to zero
             if training:
                 optimizer.zero_grad()
-                if model_type == 'seq2seq_gru':
+                if model_type == 'seq2seq_gru' or model_type == 'seq2seq_gru_attention':
                     labels = labels.permute(0, 2, 1)  # [batch_size, timesteps, out_dim]
                     outputs_tmp = model(inputs, output_last=False, target=labels)
                     # 合并batch_size和timesteps
@@ -111,7 +111,7 @@ def train_model_w_metrics(
             # forward pass, backward pass, optimize
             else:
                 with torch.no_grad():
-                    if model_type == 'seq2seq_gru':
+                    if model_type == 'seq2seq_gru' or model_type == 'seq2seq_gru_attention':
                         outputs_tmp = model(inputs, output_last=False)
                         outputs = outputs_tmp.view(-1, outputs_tmp.size(-1))
                         labels = labels.permute(0, 2, 1)  # [batch_size, timesteps, out_dim]
@@ -132,7 +132,7 @@ def train_model_w_metrics(
             if not training or calculate_train_metrics:
 
                 # decode predictions into label
-                if model_type == 'seq2seq_gru': # [batch_size, timesteps, out_dim]
+                if model_type == 'seq2seq_gru' or model_type == 'seq2seq_gru_attention': # [batch_size, timesteps, out_dim]
                     outputs = outputs_tmp[:, -1, :] # [batch_size, out_dim]
                     # label shape [batch_size, timesteps]
                     # 取最后一个timestep的label

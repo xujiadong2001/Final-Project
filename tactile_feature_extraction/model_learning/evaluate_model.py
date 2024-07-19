@@ -59,7 +59,7 @@ def evaluate_model(
         # forward pass
         with torch.no_grad():
             outputs = model(inputs)
-        if model_type == 'seq2seq_gru':
+        if model_type == 'seq2seq_gru' or model_type == 'seq2seq_gru_attention':
             labels_dict = {k: v[:, -1] for k, v in labels_dict.items()}
         # count correct for accuracy metric
         predictions_dict = label_encoder.decode_label(outputs)
