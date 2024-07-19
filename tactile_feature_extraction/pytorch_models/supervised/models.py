@@ -472,13 +472,17 @@ class TransformerModel(nn.Module):
             nn.TransformerEncoderLayer(d_model, nhead, dim_feedforward, dropout),
             num_encoder_layers
         )
+        self.fc1 = nn.Linear(d_model, d_model)
+        self.activation = nn.ReLU()
         self.fc_out = nn.Linear(d_model, output_dim)
 
     def forward(self, src):
         src = self.embedding(src) * torch.sqrt(torch.tensor(self.d_model, dtype=torch.float32))
         src = self.pos_encoder(src)
         output = self.transformer_encoder(src)
-        output = self.fc_out(output[:, -1, :])
+        output = self.fc1(output[:, -1, :])
+        output = self.activation(output)
+        output = self.fc_out(output)
         return output
 
 class GRUEncoder(nn.Module):
@@ -855,7 +859,7 @@ class ConvTransformer(nn.Module):
             num_encoder_layers=6,
             num_decoder_layers=6,
             dim_feedforward=2048,
-            full_transformer=True,
+            full_transformer=False,
             conv_layers=[16, 16, 16],
             conv_kernel_sizes=[5, 5, 5],
             fc_layers=[128, 128],
