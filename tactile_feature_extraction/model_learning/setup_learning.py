@@ -45,15 +45,15 @@ def setup_learning(save_dir=None):
     learning_params = {
         'seed': 42,
         'batch_size': 32,
-        'epochs': 100,
-        'lr': 1e-4,
+        'epochs': 50, # 100
+        'lr': 5e-5,
         'lr_factor': 0.5,
         'lr_patience': 10,
         'adam_decay': 1e-6,
         'adam_b1': 0.9,
         'adam_b2': 0.999,
         'shuffle': True,
-        'n_cpu': 8,
+        'n_cpu': 11,
     }
 
     image_processing_params = {
