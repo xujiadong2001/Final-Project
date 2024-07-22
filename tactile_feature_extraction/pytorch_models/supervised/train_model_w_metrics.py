@@ -179,7 +179,7 @@ def train_model_w_metrics(
 
     # for saving best model
     lowest_val_loss = np.inf
-
+    best_model = None
     with tqdm(total=learning_params['epochs']) as pbar:
 
         # Main training loop

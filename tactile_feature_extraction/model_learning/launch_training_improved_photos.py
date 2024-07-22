@@ -148,8 +148,31 @@ def launch():
                 calculate_train_metrics=False,
                 device=device
             )
-
+            print('evaluating the final model')
             # perform a final evaluation using the best modely
+            evaluate_model(
+                task,
+                model_type,
+                model,
+                label_encoder,
+                val_generator,
+                learning_params,
+                save_dir,
+                error_plotter,
+                device=device
+            )
+
+            model = create_model(
+                in_dim=in_dim,
+                in_channels=in_channels,
+                out_dim=out_dim,
+                model_params=model_params,
+                device=device,
+                saved_model_dir=save_dir
+            )
+            model.load_state_dict(torch.load(os.path.join(save_dir, 'best_model.pth')))
+            model.eval()
+            print('evaluating the best model')
             evaluate_model(
                 task,
                 model_type,

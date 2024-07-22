@@ -574,6 +574,7 @@ class Seq2SeqGRU(nn.Module):
             dropout=dropout
         )
         if cnn_pretained:
+            print('load cnn model from %s' % cnn_pretained)
             self.conv_model.load_state_dict(torch.load(cnn_pretained))
         if lock_cnn:
             for param in self.conv_model.parameters():
@@ -704,6 +705,7 @@ class ConvLstm(nn.Module):
             dropout=dropout
         )
         if cnn_pretained:
+            print('load cnn model from %s' % cnn_pretained)
             self.conv_model.load_state_dict(torch.load(cnn_pretained))
         if lock_cnn:
             for param in self.conv_model.parameters():
@@ -763,6 +765,7 @@ class ConvGRU(nn.Module):
             dropout=dropout
         )
         if cnn_pretained:
+            print('load cnn model from %s' % cnn_pretained)
             self.conv_model.load_state_dict(torch.load(cnn_pretained))
         if lock_cnn:
             for param in self.conv_model.parameters():
