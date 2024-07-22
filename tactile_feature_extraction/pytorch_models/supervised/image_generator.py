@@ -368,6 +368,7 @@ class PhotoDataset_ConvLstm(torch.utils.data.Dataset):
             labels_dir,
             n_frames,
             padding=True,
+            video_list=None,
             dims=(128, 128),
             bbox=None,
             stdiz=False,
@@ -382,6 +383,7 @@ class PhotoDataset_ConvLstm(torch.utils.data.Dataset):
         self.photos_dir = photos_dir
         self.labels_dir = labels_dir
         self.n_frames = n_frames
+        self.video_list = video_list
         self.padding = padding
 
         self._dims = dims
@@ -399,8 +401,7 @@ class PhotoDataset_ConvLstm(torch.utils.data.Dataset):
 
     def _create_samples(self):
         samples = []
-        videos = [f for f in os.listdir(self.photos_dir)]
-        for video in tqdm(videos):
+        for video in tqdm(self.video_list):
             video_path = os.path.join(self.photos_dir, video)
             label_file = video + '.pkl'
             label_path = os.path.join(self.labels_dir, label_file)
@@ -480,6 +481,7 @@ class PhotoDataset_Seq2Seq(torch.utils.data.Dataset):
             photos_dir,
             labels_dir,
             n_frames,
+            video_list=None,
             padding=True,
             dims=(128, 128),
             bbox=None,
@@ -495,6 +497,7 @@ class PhotoDataset_Seq2Seq(torch.utils.data.Dataset):
         self.photos_dir = photos_dir
         self.labels_dir = labels_dir
         self.n_frames = n_frames
+        self.video_list = video_list
         self.padding = padding
 
         self._dims = dims
@@ -512,8 +515,7 @@ class PhotoDataset_Seq2Seq(torch.utils.data.Dataset):
 
     def _create_samples(self):
         samples = []
-        videos = [f for f in os.listdir(self.photos_dir)]
-        for video in tqdm(videos):
+        for video in tqdm(self.video_list):
             video_path = os.path.join(self.photos_dir, video)
             label_file = video + '.pkl'
             label_path = os.path.join(self.labels_dir, label_file)
@@ -616,6 +618,7 @@ class PhotoDataset_ConvLstm_2(torch.utils.data.Dataset):
             photos_dir,
             labels_dir,
             n_frames,
+            video_list=None,
             padding=True,
             dims=(128, 128),
             bbox=None,
@@ -631,6 +634,7 @@ class PhotoDataset_ConvLstm_2(torch.utils.data.Dataset):
         self.photos_dir = photos_dir
         self.labels_dir = labels_dir
         self.n_frames = n_frames
+        self.video_list = video_list
         self.padding = padding
 
         self._dims = dims
@@ -648,8 +652,7 @@ class PhotoDataset_ConvLstm_2(torch.utils.data.Dataset):
 
     def _create_samples(self):
         samples = []
-        videos = [f for f in os.listdir(self.photos_dir)]
-        for video in tqdm(videos):
+        for video in tqdm(self.video_list):
             video_path = os.path.join(self.photos_dir, video)
             label_file = video + '.pkl'
             label_path = os.path.join(self.labels_dir, label_file)

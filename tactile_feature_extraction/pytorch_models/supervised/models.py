@@ -558,7 +558,8 @@ class Seq2SeqGRU(nn.Module):
             fc_layers=[128, 128],
             activation='relu',
             apply_batchnorm=False,
-            dropout=0.0
+            dropout=0.0,
+            cnn_pretained=None
         ):
         super(Seq2SeqGRU, self).__init__()
         self.conv_model = CNN(
@@ -572,6 +573,8 @@ class Seq2SeqGRU(nn.Module):
             apply_batchnorm=apply_batchnorm,
             dropout=dropout
         )
+        if cnn_pretained:
+            self.conv_model.load_state_dict(torch.load(cnn_pretained))
         if lock_cnn:
             for param in self.conv_model.parameters():
                 param.requires_grad = False
