@@ -106,7 +106,7 @@ def create_model(
             in_dim=in_dim,
             in_channels=in_channels,
             out_dim=out_dim,
-            lock_cnn=False, # 锁定CNN层
+            lock_cnn=True, # 锁定CNN层
             gru_hidden_dim=128,
             gru_layers=2,
             cnn_pretained=cnn_model_dir,
@@ -579,6 +579,8 @@ class Seq2SeqGRU(nn.Module):
         if cnn_pretained:
             print('load cnn model from %s' % cnn_pretained)
             self.conv_model.load_state_dict(torch.load(cnn_pretained))
+        else:
+            lock_cnn = False
         if lock_cnn:
             for param in self.conv_model.parameters():
                 param.requires_grad = False
@@ -710,6 +712,8 @@ class ConvLstm(nn.Module):
         if cnn_pretained:
             print('load cnn model from %s' % cnn_pretained)
             self.conv_model.load_state_dict(torch.load(cnn_pretained))
+        else:
+            lock_cnn = False
         if lock_cnn:
             for param in self.conv_model.parameters():
                 param.requires_grad = False
@@ -770,6 +774,8 @@ class ConvGRU(nn.Module):
         if cnn_pretained:
             print('load cnn model from %s' % cnn_pretained)
             self.conv_model.load_state_dict(torch.load(cnn_pretained))
+        else:
+            lock_cnn = False
         if lock_cnn:
             for param in self.conv_model.parameters():
                 param.requires_grad = False
