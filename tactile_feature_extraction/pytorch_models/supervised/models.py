@@ -105,7 +105,7 @@ def create_model(
             in_dim=in_dim,
             in_channels=in_channels,
             out_dim=out_dim,
-            lock_cnn=False, # 锁定CNN层
+            lock_cnn=True, # 锁定CNN层
             gru_hidden_dim=128,
             gru_layers=2,
             cnn_pretained="collect_331_5D_surface/model/non_async/linshear_surface_3d/331/simple_cnn/best_model.pth",
