@@ -97,17 +97,18 @@ def launch():
             labels_dir = 'collect_331_5D_surface/time_series'
 
             # set generators and loaders
-            train_generator = DataGenerator(
+            train_generator,val_generator = DataGenerator(
                 photos_dir,
                 labels_dir,
                 n_frames,
+                val_split=0.2,
                 padding=True, # 舍弃不足n帧的数据
                 **train_processing_params
             )
             # 划分训练集和验证集
-            train_size = int(0.8 * len(train_generator))
-            val_size = len(train_generator) - train_size
-            train_generator, val_generator = torch.utils.data.random_split(train_generator, [train_size, val_size])
+            # train_size = int(0.8 * len(train_generator))
+            # val_size = len(train_generator) - train_size
+            # train_generator, val_generator = torch.utils.data.random_split(train_generator, [train_size, val_size])
             # create the encoder/decoder for labels
             label_encoder = FTPoseEncoder(label_names, ft_pose_limits, device)
 
