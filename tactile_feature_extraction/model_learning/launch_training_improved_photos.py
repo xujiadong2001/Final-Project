@@ -34,13 +34,12 @@ def launch():
     sensors = args.sensors
     models = args.models
     device = args.device
-    for task in tasks:
-        save_dir_str = make_save_dir_str(async_data, task, sensors)
+
     for task in tasks:
         for model_type in models:
             # task specific parameters
             out_dim, label_names = setup_task(task)
-
+            save_dir_str = make_save_dir_str(async_data, task, sensors)
             # setup save dir
             save_dir = os.path.join(BASE_MODEL_PATH, save_dir_str, model_type)
             make_dir(save_dir)
@@ -75,7 +74,7 @@ def launch():
                 out_dim=out_dim,
                 model_params=model_params,
                 device=device,
-                # cnn_model_dir="collect_331_5D_surface/model/non_async/"+task+"/331/simple_cnn/best_model.pth"
+                cnn_model_dir="collect_331_5D_surface/model/non_async/"+task+"/331/simple_cnn/best_model.pth"
             )
 
             combined_dirs = list(itertools.product(["linshear_surface_3d"], sensors))
