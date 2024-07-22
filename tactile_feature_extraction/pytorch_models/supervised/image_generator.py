@@ -265,6 +265,7 @@ class PhotoDataset(torch.utils.data.Dataset):
             photos_dir,
             labels_dir,
             n_frames,
+            padding=True,
             dims=(128, 128),
             bbox=None,
             stdiz=False,
@@ -293,12 +294,13 @@ class PhotoDataset(torch.utils.data.Dataset):
         self._noise_var = noise_var
 
         self.samples = self._create_samples()
+        self.val_size = val_size
 
     def _create_samples(self):
         train_samples = []
         val_samples = []
         videos = [f for f in os.listdir(self.photos_dir)]
-        val_size = int(len(videos) * val_size)
+        val_size = int(len(videos) * self.val_size)
         # 随机划分训练集和验证集
         np.random.shuffle(videos)
         val_videos = videos[:val_size]
