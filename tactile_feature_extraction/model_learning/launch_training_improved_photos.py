@@ -177,21 +177,6 @@ def launch():
                 device=device
             )
 
-            model.load_state_dict(torch.load("collect_331_5D_surface/model/non_async/linshear_surface_3d/331/conv_gru-7-22/best_model.pth"))
-            model.eval()
-            print('记得删除这段')
-            evaluate_model(
-                task,
-                model_type,
-                model,
-                label_encoder,
-                val_generator,
-                learning_params,
-                save_dir,
-                error_plotter,
-                device=device
-            )
-
 
 if __name__ == "__main__":
     launch()
