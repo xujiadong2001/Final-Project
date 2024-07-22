@@ -101,7 +101,6 @@ def launch():
                 photos_dir,
                 labels_dir,
                 n_frames,
-                val_split=0.2,
                 padding=True, # 舍弃不足n帧的数据
                 **train_processing_params
             )
