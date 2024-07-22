@@ -44,9 +44,9 @@ def setup_learning(save_dir=None):
     # Parameters
     learning_params = {
         'seed': 42,
-        'batch_size': 32,
-        'epochs': 50, # 100
-        'lr': 5e-5,
+        'batch_size': 16,
+        'epochs': 10, # 100
+        'lr': 5e-5, # 1e-4
         'lr_factor': 0.5,
         'lr_patience': 10,
         'adam_decay': 1e-6,
