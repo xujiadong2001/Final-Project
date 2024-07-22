@@ -1,6 +1,7 @@
 import os
 import itertools
 import torch
+import numpy as np
 
 from tactile_feature_extraction.model_learning.setup_learning import parse_args
 from tactile_feature_extraction.model_learning.setup_learning import setup_model
@@ -96,13 +97,28 @@ def launch():
             photos_dir = 'collect_331_5D_surface/videos'
             labels_dir = 'collect_331_5D_surface/time_series'
 
+            video_list = [f for f in os.listdir(photos_dir)]
+            # 打乱数据
+
+            np.random.shuffle(video_list)
+            train_video_list = video_list[:int(len(video_list)*0.8)]
+            val_video_list = video_list[int(len(video_list)*0.8):]
             # set generators and loaders
-            train_generator,val_generator = DataGenerator(
+            train_generator = DataGenerator(
                 photos_dir,
                 labels_dir,
                 n_frames,
+                video_list=train_video_list,
                 padding=True, # 舍弃不足n帧的数据
                 **train_processing_params
+            )
+            val_generator = DataGenerator(
+                photos_dir,
+                labels_dir,
+                n_frames,
+                video_list=val_video_list,
+                padding=True, # 舍弃不足n帧的数据
+                **val_processing_params
             )
             # 划分训练集和验证集
             # train_size = int(0.8 * len(train_generator))
