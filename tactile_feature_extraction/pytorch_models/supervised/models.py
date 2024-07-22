@@ -97,6 +97,7 @@ def create_model(
             lock_cnn=False, # 锁定CNN层
             gru_hidden_dim=128,
             gru_layers=2,
+            cnn_pretained="collect_331_5D_surface/model/non_async/linshear_surface_3d/331/simple_cnn/best_model.pth",
             **model_params['model_kwargs']
         ).to(device)
     elif model_params['model_type'] == 'seq2seq_gru':
