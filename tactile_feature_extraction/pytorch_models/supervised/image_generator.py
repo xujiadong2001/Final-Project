@@ -292,9 +292,9 @@ class PhotoDataset(torch.utils.data.Dataset):
         self._rzoom = rzoom
         self._brightlims = brightlims
         self._noise_var = noise_var
-
-        self.samples = self._create_samples()
         self.val_size = val_size
+        self.samples = self._create_samples()
+
 
     def _create_samples(self):
         train_samples = []
