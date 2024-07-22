@@ -74,7 +74,7 @@ def launch():
                 out_dim=out_dim,
                 model_params=model_params,
                 device=device,
-                cnn_model_dir="collect_331_5D_surface/model/non_async/"+task+"/331/simple_cnn/best_model.pth"
+                # cnn_model_dir="collect_331_5D_surface/model/non_async/"+task+"/331/simple_cnn/best_model.pth"
             )
 
             combined_dirs = list(itertools.product(["linshear_surface_3d"], sensors))
