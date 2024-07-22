@@ -89,6 +89,16 @@ def evaluate_model(
     print("evaluated_err:")
     print(err_df[target_label_names].mean())
 
+    # 保存在results.txt
+    with open(os.path.join(save_dir, 'result.txt'), 'a') as f:
+        f.write('Metrics\n')
+        f.write('evaluated_acc:\n')
+        f.write(str(acc_df[[*target_label_names, 'overall_acc']].mean()))
+        f.write('\n')
+        f.write('evaluated_err:\n')
+        f.write(str(err_df[target_label_names].mean()))
+        f.write('\n')
+
     # plot full error graph
     error_plotter.final_plot(
         pred_df, targ_df, err_df

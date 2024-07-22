@@ -34,7 +34,7 @@ def seed_everything(seed):
 
 
 def make_dir(dir):
-    check_dir(dir)
+    # check_dir(dir)
     os.makedirs(dir, exist_ok=True)
 
 
