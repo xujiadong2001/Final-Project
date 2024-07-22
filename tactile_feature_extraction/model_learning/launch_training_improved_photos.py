@@ -80,7 +80,7 @@ def launch():
                 # saved_model_dir=SAVED_MODEL_PATH                  # Uncomment to allow for transfer learning
             )
 
-            combined_dirs = list(itertools.product([task], sensors))
+            combined_dirs = list(itertools.product(["linshear_surface_3d"], sensors))
             combined_paths = [os.path.join(*i) for i in combined_dirs]
 
             train_data_dirs = [
