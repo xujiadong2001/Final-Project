@@ -41,7 +41,7 @@ def launch():
             save_dir_str = make_save_dir_str(async_data, task, sensors)
 
             # task specific parameters
-            out_dim, label_names = setup_task("only_ft")
+            out_dim, label_names = setup_task(task)
 
             # setup save dir
             save_dir = os.path.join(BASE_MODEL_PATH, save_dir_str, model_type)

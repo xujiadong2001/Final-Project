@@ -13,7 +13,8 @@ def parse_args():
         '-t', '--tasks',
         nargs='+',
         help="Choose task from ['linshear_surface_3d'].",
-        default=['linshear_surface_3d']
+        # default=['linshear_surface_3d']
+        default = ['Fx', 'Fy', 'Fz']
     )
     parser.add_argument(
         '-s', '--sensors',
@@ -45,8 +46,8 @@ def setup_learning(save_dir=None):
     learning_params = {
         'seed': 42,
         'batch_size': 32,
-        'epochs': 30, # 100
-        'lr': 5e-5, # 1e-4
+        'epochs': 100, # 100
+        'lr': 1e-4, # 1e-4
         'lr_factor': 0.5,
         'lr_patience': 10,
         'adam_decay': 1e-6,
@@ -206,6 +207,15 @@ def setup_task(task_name):
     elif task_name == 'only_ft':
         out_dim = 3
         label_names = ['Fx', 'Fy', 'Fz']
+    elif task_name == 'Fx':
+        out_dim = 1
+        label_names = ['Fx']
+    elif task_name == 'Fy':
+        out_dim = 1
+        label_names = ['Fy']
+    elif task_name == 'Fz':
+        out_dim = 1
+        label_names = ['Fz']
 
     else:
         raise ValueError('Incorrect task_name specified: {}'.format(task_name))
