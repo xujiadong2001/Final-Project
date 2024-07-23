@@ -521,7 +521,7 @@ class GRUDecoder(nn.Module):
             self.activation = nn.ReLU()
         else:
             self.activation = None
-        self.dropout = nn.Dropout(0.2)
+        self.dropout = nn.Dropout(0.0)
         self.fc2 = nn.Linear(hidden_dim, output_dim)
     '''
     def forward(self, x, hidden, context):

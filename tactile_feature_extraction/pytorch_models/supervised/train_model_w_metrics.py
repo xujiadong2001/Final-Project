@@ -13,6 +13,9 @@ from torch.utils.tensorboard import SummaryWriter
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
+def l1_regularization(model, lamda):
+    l1_norm = sum(p.abs().sum() for p in model.parameters())
+    return lamda * l1_norm
 
 def train_model_w_metrics(
     model_type,
@@ -126,6 +129,9 @@ def train_model_w_metrics(
             epoch_batch_loss.append(loss_size.item())
 
             if training:
+                # l1 regularization
+                if learning_params['l1_reg'] > 0.0:
+                    loss_size += l1_regularization(model, learning_params['l1_reg'])
                 loss_size.backward()
                 optimizer.step()
 
