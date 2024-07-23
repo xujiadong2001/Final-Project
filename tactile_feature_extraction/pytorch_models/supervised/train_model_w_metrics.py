@@ -47,7 +47,8 @@ def train_model_w_metrics(
     n_val_batches = len(val_loader)
 
     # define loss
-    loss = nn.MSELoss()
+    # loss = nn.MSELoss()
+    loss = nn.L1Loss()
 
     # define optimizer
     optimizer = optim.Adam(
