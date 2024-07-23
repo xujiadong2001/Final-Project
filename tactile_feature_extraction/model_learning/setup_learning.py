@@ -14,7 +14,8 @@ def parse_args():
         nargs='+',
         help="Choose task from ['linshear_surface_3d'].",
         # default=['linshear_surface_3d']
-        default = ['Fx', 'Fy', 'Fz']
+        # default = ['Fx', 'Fy', 'Fz']
+        default = ['only_ft']
     )
     parser.add_argument(
         '-s', '--sensors',
