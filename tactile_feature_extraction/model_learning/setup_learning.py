@@ -56,7 +56,7 @@ def setup_learning(save_dir=None):
         'adam_b2': 0.999,
         'shuffle': True,
         'n_cpu': 11,
-        'l1_reg': 0.01,
+        'l1_reg': 0.001,
     }
 
     image_processing_params = {
