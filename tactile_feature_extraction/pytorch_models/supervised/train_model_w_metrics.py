@@ -61,7 +61,8 @@ def train_model_w_metrics(
         optimizer,
         factor=learning_params['lr_factor'],
         patience=learning_params['lr_patience'],
-        verbose=True
+        min_lr=1e-7,
+        verbose=True,
     )
 
     def get_lr(optimizer):
