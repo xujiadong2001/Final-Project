@@ -98,7 +98,8 @@ def train_model_w_metrics(
             if training:
                 optimizer.zero_grad()
                 if model_type == 'seq2seq_gru' or model_type == 'seq2seq_gru_attention':
-                    labels = labels.permute(0, 2, 1)  # [batch_size, timesteps, out_dim]
+                    # labels = labels.permute(0, 2, 1)  # [batch_size, timesteps, out_dim]
+                    labels = None # 不传入labels
                     outputs_tmp = model(inputs, output_last=False, target=labels)
                     # 合并batch_size和timesteps
                     outputs = outputs_tmp.view(-1, outputs_tmp.size(-1))
