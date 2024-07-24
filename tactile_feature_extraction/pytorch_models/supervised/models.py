@@ -1069,7 +1069,7 @@ class Seq2SeqGRUAttention(nn.Module):
         for t in range(0, timesteps):
             # output, hidden, _ = self.decoder(x, hidden, encoder_outputs)
 
-            hidden = hidden.unsqueeze(0)
+            hidden = hidden.squeeze(0) # [batch_size, hidden_dim]
             output, hidden = self.decoder(x, hidden)
 
             outputs[:, t, :] = output
