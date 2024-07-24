@@ -469,9 +469,11 @@ class GRUModel(nn.Module):
 
         # 使用GRU进行前向传播
         out, _ = self.gru(x, h0)
+        # out: [batch_size, seq_length, hidden_dim]
 
         # 只使用最后一个时间步的输出进行预测
         out = self.fc(out[:, -1, :])
+        # out: [batch_size, output_dim]
         return out
 
 class TransformerModel(nn.Module):
@@ -798,9 +800,69 @@ class ConvGRU(nn.Module):
         conv_output = self.conv_model(conv_input)
         gru_input = conv_output.view(batch_size, timesteps, -1)
         output = self.GRU(gru_input)
+        print(output.shape)
         output = self.fc(output)
         output = self.activation(output)
         output = self.fc2(output)
+        return output
+
+class ConvGRUAttention(nn.Module):
+    def __init__(
+            self,
+            in_dim,
+            in_channels,
+            out_dim,
+            lock_cnn=False,
+            gru_hidden_dim=128,
+            gru_layers=2,
+            conv_layers=[16, 16, 16],
+            conv_kernel_sizes=[5, 5, 5],
+            fc_layers=[128, 128],
+            activation='relu',
+            apply_batchnorm=False,
+            dropout=0.0,
+            cnn_pretained=None,
+        ):
+        super(ConvGRUAttention, self).__init__()
+        self.conv_model = CNN(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            conv_layers=conv_layers,
+            conv_kernel_sizes=conv_kernel_sizes,
+            fc_layers=fc_layers,
+            activation=activation,
+            apply_batchnorm=apply_batchnorm,
+            dropout=dropout
+        )
+        if cnn_pretained:
+            print('load cnn model from %s' % cnn_pretained)
+            self.conv_model.load_state_dict(torch.load(cnn_pretained))
+        else:
+            lock_cnn = False
+        if lock_cnn:
+            for param in self.conv_model.parameters():
+                param.requires_grad = False
+        # 移除最后一层全连接层
+        self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
+        self.GRU = GRUModel(
+            input_dim=fc_layers[-1],
+            hidden_dim=gru_hidden_dim,
+            output_dim=gru_hidden_dim,
+            num_layers=gru_layers
+        )
+
+        self.gru = nn.GRU(input_size, hidden_size, num_layers, batch_first=True, dropout=dropout)
+
+        self.fc2 = nn.Linear(gru_hidden_dim, out_dim)
+        # self.output_layer = nn.Linear(lstm_hidden_dim, out_dim)
+    def forward(self, x):
+        batch_size, timesteps, channel_x, h_x, w_x = x.shape
+        conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
+        conv_output = self.conv_model(conv_input)
+        gru_input = conv_output.view(batch_size, timesteps, -1)
+        output = self.GRU(gru_input)
+
         return output
 
 '''
