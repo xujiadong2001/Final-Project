@@ -951,6 +951,7 @@ class Attention(nn.Module):
         # encoder_outputs = [src length, batch size, encoder hidden dim * 2]
         batch_size = encoder_outputs.shape[1]
         src_length = encoder_outputs.shape[0]
+        print(hidden.shape)
         assert src_length == 5
         assert hidden.shape == torch.Size([batch_size, 128])
         # repeat decoder hidden state src_length times
