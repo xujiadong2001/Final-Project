@@ -50,7 +50,8 @@ def launch():
 
             n_frames = 5  # 前n帧
 
-            if model_type == 'conv_lstm' or model_type == 'conv_transformer' or model_type == 'conv_gru' or model_type == 'CNN3D':
+            PhotoDataset_ConvLstm_list = ['conv_lstm', 'conv_transformer', 'conv_gru', 'CNN3D','conv_gru_attention']
+            if model_type in PhotoDataset_ConvLstm_list:
                 if n_frames <= 20:
                     DataGenerator = PhotoDataset_ConvLstm
                 else:
