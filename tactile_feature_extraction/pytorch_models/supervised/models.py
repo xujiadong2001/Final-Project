@@ -957,6 +957,7 @@ class Attention(nn.Module):
         hidden = hidden.unsqueeze(1).repeat(1, src_length, 1)
         encoder_outputs = encoder_outputs.permute(1, 0, 2)
         # hidden = [batch size, src length, decoder hidden dim]
+        assert hidden.shape == torch.Size([batch_size, 5, 128])
         # encoder_outputs = [batch size, src length, encoder hidden dim * 2]
         energy = torch.tanh(self.attn_fc(torch.cat((hidden, encoder_outputs), dim=2)))
         # energy = [batch size, src length, decoder hidden dim]
@@ -1051,7 +1052,8 @@ class Seq2SeqGRUAttention(nn.Module):
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
         self.out_dim = out_dim
         self.encoder = GRUEncoderAttention(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim)
-        self.decoder = GRUDecoderAttention(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim, output_dim=out_dim, activation='relu')
+        # self.decoder = GRUDecoderAttention(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim, output_dim=out_dim, activation='relu')
+        self.decoder = GRUDecoder(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim, output_dim=out_dim, activation='relu')
     def forward(self, x, output_last=True,target=None):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
         # 检验输入数据的维度是否正确
