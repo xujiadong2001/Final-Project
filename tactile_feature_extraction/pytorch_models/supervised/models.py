@@ -787,23 +787,21 @@ class ConvGRU(nn.Module):
         self.GRU = GRUModel(
             input_dim=fc_layers[-1],
             hidden_dim=gru_hidden_dim,
-            output_dim=gru_hidden_dim,
+            output_dim=out_dim,
             num_layers=gru_layers
         )
-        self.fc = nn.Linear(gru_hidden_dim, 64)
-        self.activation = nn.ReLU()
-        self.fc2 = nn.Linear(64, out_dim)
-        # self.output_layer = nn.Linear(lstm_hidden_dim, out_dim)
+        # self.fc = nn.Linear(gru_hidden_dim, 64)
+        # self.activation = nn.ReLU()
+        # self.fc2 = nn.Linear(64, out_dim)
     def forward(self, x):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
         conv_output = self.conv_model(conv_input)
         gru_input = conv_output.view(batch_size, timesteps, -1)
         output = self.GRU(gru_input)
-        print(output.shape)
-        output = self.fc(output)
-        output = self.activation(output)
-        output = self.fc2(output)
+        # output = self.fc(output)
+        # output = self.activation(output)
+        # output = self.fc2(output)
         return output
 
 class ConvGRUAttention(nn.Module):
@@ -845,14 +843,10 @@ class ConvGRUAttention(nn.Module):
                 param.requires_grad = False
         # 移除最后一层全连接层
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
-        self.GRU = GRUModel(
-            input_dim=fc_layers[-1],
-            hidden_dim=gru_hidden_dim,
-            output_dim=gru_hidden_dim,
-            num_layers=gru_layers
-        )
 
-        self.gru = nn.GRU(input_size, hidden_size, num_layers, batch_first=True, dropout=dropout)
+
+        self.gru = nn.GRU(fc_layers[-1], gru_hidden_dim, gru_layers, batch_first=True)
+        self.attention = Attention(gru_hidden_dim, gru_hidden_dim)
 
         self.fc2 = nn.Linear(gru_hidden_dim, out_dim)
         # self.output_layer = nn.Linear(lstm_hidden_dim, out_dim)
@@ -861,7 +855,7 @@ class ConvGRUAttention(nn.Module):
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
         conv_output = self.conv_model(conv_input)
         gru_input = conv_output.view(batch_size, timesteps, -1)
-        output = self.GRU(gru_input)
+        output = self.gru(gru_input)
 
         return output
 
