@@ -1019,7 +1019,7 @@ class GRUDecoderAttention(nn.Module):
             out = self.activation(out)
 
         out = self.fc2(out)
-
+        # hidden = [num_layers, batch_size, hidden_dim]
         return out, hidden.squeeze(0), a.squeeze(1)
 
 class Seq2SeqGRUAttention(nn.Module):
@@ -1066,7 +1066,7 @@ class Seq2SeqGRUAttention(nn.Module):
         conv_output = self.conv_model(conv_input)
         gru_input = conv_output.view(timesteps, batch_size,  -1) # [batch_size, timesteps, fc_layers[-1]]
         encoder_outputs, hidden = self.encoder(gru_input)
-
+        print(hidden.shape)
         # x 全零向量
         x = torch.zeros(batch_size, 1, self.out_dim).to(x.device)
         for t in range(0, timesteps):
