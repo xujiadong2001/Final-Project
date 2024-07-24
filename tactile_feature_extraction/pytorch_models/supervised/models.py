@@ -991,8 +991,8 @@ class GRUDecoderAttention(nn.Module):
         super(GRUDecoderAttention, self).__init__()
         self.hidden_dim = hidden_dim
         self.attention = Attention(hidden_dim, hidden_dim)
-        self.gru = nn.GRU(output_dim + hidden_dim * 2 , hidden_dim, batch_first=False)
-        self.fc = nn.Linear(3* hidden_dim + output_dim, hidden_dim)
+        self.gru = nn.GRU(output_dim + hidden_dim , hidden_dim, batch_first=False)
+        self.fc = nn.Linear(2* hidden_dim + output_dim, hidden_dim)
         if activation == 'relu':
             self.activation = nn.ReLU()
         else:
