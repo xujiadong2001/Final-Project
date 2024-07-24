@@ -951,7 +951,6 @@ class Attention(nn.Module):
         # encoder_outputs = [src length, batch size, encoder hidden dim * 2]
         batch_size = encoder_outputs.shape[1]
         src_length = encoder_outputs.shape[0]
-        print(hidden.shape)
         assert src_length == 5
         assert hidden.shape == torch.Size([batch_size, 128])
         # repeat decoder hidden state src_length times
@@ -1064,9 +1063,9 @@ class Seq2SeqGRUAttention(nn.Module):
         outputs = torch.zeros(batch_size, timesteps, self.out_dim).to(x.device)
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
         conv_output = self.conv_model(conv_input)
-        gru_input = conv_output.view(timesteps, batch_size,  -1) # [batch_size, timesteps, fc_layers[-1]]
+        gru_input = conv_output.view(timesteps, batch_size,  -1) # [src length, batch size, input_dim]
         encoder_outputs, hidden = self.encoder(gru_input)
-        print(hidden.shape)
+        hidden = hidden.squeeze(0)
         # x 全零向量
         x = torch.zeros(batch_size, 1, self.out_dim).to(x.device)
         for t in range(0, timesteps):
