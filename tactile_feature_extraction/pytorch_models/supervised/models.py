@@ -1067,7 +1067,8 @@ class Seq2SeqGRUAttention(nn.Module):
         # x 全零向量
         x = torch.zeros(batch_size, 1, self.out_dim).to(x.device)
         for t in range(0, timesteps):
-            output, hidden, _ = self.decoder(x, hidden, encoder_outputs)
+            # output, hidden, _ = self.decoder(x, hidden, encoder_outputs)
+            output, hidden = self.decoder(x, hidden)
             outputs[:, t, :] = output
             if target is not None:
                 x = target[:, t, :].unsqueeze(1)
