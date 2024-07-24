@@ -858,8 +858,8 @@ class ConvGRUAttention(nn.Module):
 
 
         self.gru = nn.GRU(fc_layers[-1], gru_hidden_dim, gru_layers, batch_first=True)
-        self.attention = Attention(gru_hidden_dim, gru_hidden_dim)
-
+        self.attention = Attention2(gru_hidden_dim)
+        self.dropout = nn.Dropout(0.1)
         self.fc2 = nn.Linear(gru_hidden_dim, out_dim)
         # self.output_layer = nn.Linear(lstm_hidden_dim, out_dim)
     def forward(self, x):
@@ -868,12 +868,29 @@ class ConvGRUAttention(nn.Module):
         conv_output = self.conv_model(conv_input)
         gru_input = conv_output.view(batch_size, timesteps, -1)
         output,hidden = self.gru(gru_input)
-        attention_output = self.attention(hidden[-1], output)
-        attention_output = attention_output.unsqueeze(1) # [batch_size, 1, src length]
-        # endoder_outputs: [src length, batch size, encoder hidden dim * 2]
-        endoder_outputs = output.permute(1, 0, 2)  # [batch size, src length, encoder hidden dim * 2]
-        weighted = torch.bmm(attention_output, endoder_outputs) # [batch size, 1, encoder hidden dim * 2]
+        context_vector, attention_weights = self.attention(hidden[-1], output)
+        context_vector = self.dropout(context_vector)
+        output = self.fc2(context_vector)
         return output
+
+
+
+class Attention2(nn.Module):
+    def __init__(self, hidden_dim):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.attn = nn.Linear(self.hidden_dim * 2, hidden_dim)
+        self.v = nn.Linear(hidden_dim, 1, bias=False)
+
+    def forward(self, hidden, encoder_outputs):
+        max_len = encoder_outputs.size(1)
+        repeated_hidden = hidden.unsqueeze(1).repeat(1, max_len, 1)
+        energy = torch.tanh(self.attn(torch.cat((repeated_hidden, encoder_outputs), dim=2)))
+        attention_scores = self.v(energy).squeeze(2)
+        attention_weights = nn.functional.softmax(attention_scores, dim=1)
+        context_vector = (encoder_outputs * attention_weights.unsqueeze(2)).sum(dim=1)
+        return context_vector, attention_weights
+
 
 '''
 class Seq2SeqConvGRU(nn.Module):
