@@ -130,6 +130,16 @@ def create_model(
             gru_layers=2,
             **model_params['model_kwargs']
         ).to(device)
+    elif model_params['model_type'] == 'conv_gru_attention':
+        model = ConvGRUAttention(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            lock_cnn=False, # 锁定CNN层
+            gru_hidden_dim=128,
+            gru_layers=2,
+            **model_params['model_kwargs']
+        ).to(device)
 
     else:
         raise ValueError('Incorrect model_type specified:  %s' % (model_params['model_type'],))
@@ -859,7 +869,10 @@ class ConvGRUAttention(nn.Module):
         gru_input = conv_output.view(batch_size, timesteps, -1)
         output,hidden = self.gru(gru_input)
         attention_output = self.attention(hidden[-1], output)
-
+        attention_output = attention_output.unsqueeze(1) # [batch_size, 1, src length]
+        # endoder_outputs: [src length, batch size, encoder hidden dim * 2]
+        endoder_outputs = output.permute(1, 0, 2)  # [batch size, src length, encoder hidden dim * 2]
+        weighted = torch.bmm(attention_output, endoder_outputs) # [batch size, 1, encoder hidden dim * 2]
         return output
 
 '''

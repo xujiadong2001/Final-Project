@@ -155,7 +155,7 @@ def setup_model(model_type, save_dir):
             'dropout': 0.0,
             'apply_batchnorm': True,
         }
-    elif model_type == 'conv_gru':
+    elif model_type == 'conv_gru' or model_type == 'conv_gru_attention':
         model_params['model_kwargs'] = {
             'conv_layers': [32, 32, 32, 32],
             'conv_kernel_sizes': [11, 9, 7, 5],
