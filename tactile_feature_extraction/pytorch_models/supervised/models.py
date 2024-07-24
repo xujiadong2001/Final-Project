@@ -941,8 +941,13 @@ class ConvTransformer(nn.Module):
 class Attention(nn.Module):
     def __init__(self, encoder_hidden_dim, decoder_hidden_dim):
         super().__init__()
+        '''
         self.attn_fc = nn.Linear(
             (encoder_hidden_dim * 2) + decoder_hidden_dim, decoder_hidden_dim
+        )
+        '''
+        self.attn_fc = nn.Linear(
+            encoder_hidden_dim + decoder_hidden_dim, decoder_hidden_dim
         )
         self.v_fc = nn.Linear(decoder_hidden_dim, 1, bias=False)
 
@@ -978,7 +983,6 @@ class GRUEncoderAttention(nn.Module):
         # x: [src length, batch size, input_dim]
         out, hidden = self.gru(x)
         # hidden = torch.tanh(self.fc(torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=1))) # 目的是
-        # out = [src length, batch size, hidden_dim * 2]
         # hidden: [num_layers, batch_size, hidden_dim]
         return out,hidden
 
