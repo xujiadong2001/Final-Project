@@ -969,13 +969,15 @@ class GRUEncoderAttention(nn.Module):
     def __init__(self, input_dim, hidden_dim):
         super(GRUEncoderAttention, self).__init__()
         self.hidden_dim = hidden_dim
-        self.gru = nn.GRU(input_dim, hidden_dim, bidirectional=True)
-        self.fc = nn.Linear(hidden_dim * 2, hidden_dim)
+        # self.gru = nn.GRU(input_dim, hidden_dim, bidirectional=True)
+        self.gru = nn.GRU(input_dim, hidden_dim, bidirectional=False)
+        # self.fc = nn.Linear(hidden_dim * 2, hidden_dim)
+        self.fc = nn.Linear(hidden_dim, hidden_dim)
 
     def forward(self, x):
         # x: [src length, batch size, input_dim]
         out, hidden = self.gru(x)
-        hidden = torch.tanh(self.fc(torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=1))) # 目的是
+        # hidden = torch.tanh(self.fc(torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=1))) # 目的是
         # out = [src length, batch size, hidden_dim * 2]
         # hidden: [num_layers, batch_size, hidden_dim]
         return out,hidden
@@ -1052,8 +1054,7 @@ class Seq2SeqGRUAttention(nn.Module):
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
         self.out_dim = out_dim
         self.encoder = GRUEncoderAttention(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim)
-        # self.decoder = GRUDecoderAttention(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim, output_dim=out_dim, activation='relu')
-        self.decoder = GRUDecoder(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim, output_dim=out_dim, activation='relu')
+        self.decoder = GRUDecoderAttention(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim, output_dim=out_dim, activation='relu')
     def forward(self, x, output_last=True,target=None):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
         # 检验输入数据的维度是否正确
@@ -1065,17 +1066,11 @@ class Seq2SeqGRUAttention(nn.Module):
         gru_input = conv_output.view(timesteps, batch_size,  -1) # [batch_size, timesteps, fc_layers[-1]]
         encoder_outputs, hidden = self.encoder(gru_input)
 
-        hidden = hidden.unsqueeze(0)  # [batch_size, hidden_dim]
-
-
-
         # x 全零向量
         x = torch.zeros(batch_size, 1, self.out_dim).to(x.device)
         for t in range(0, timesteps):
-            # output, hidden, _ = self.decoder(x, hidden, encoder_outputs)
+            output, hidden, _ = self.decoder(x, hidden, encoder_outputs)
 
-
-            output, hidden = self.decoder(x, hidden)
 
             outputs[:, t, :] = output
             if target is not None:
