@@ -951,6 +951,8 @@ class Attention(nn.Module):
         # encoder_outputs = [src length, batch size, encoder hidden dim * 2]
         batch_size = encoder_outputs.shape[1]
         src_length = encoder_outputs.shape[0]
+        assert src_length == 5
+        assert hidden.shape == torch.Size([batch_size, 128])
         # repeat decoder hidden state src_length times
         hidden = hidden.unsqueeze(1).repeat(1, src_length, 1)
         encoder_outputs = encoder_outputs.permute(1, 0, 2)
@@ -972,7 +974,7 @@ class GRUEncoderAttention(nn.Module):
     def forward(self, x):
         # x: [src length, batch size, input_dim]
         out, hidden = self.gru(x)
-        hidden = torch.tanh(self.fc(torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=1)))
+        hidden = torch.tanh(self.fc(torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=1))) # 目的是
         # out = [src length, batch size, hidden_dim * 2]
         # hidden: [num_layers, batch_size, hidden_dim]
         return out,hidden
