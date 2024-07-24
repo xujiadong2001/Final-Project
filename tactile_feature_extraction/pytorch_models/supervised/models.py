@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import random
 # from pytorch_model_summary import summary
 # from vit_pytorch.vit import ViT
 
@@ -575,7 +576,8 @@ class Seq2SeqGRU(nn.Module):
             activation='relu',
             apply_batchnorm=False,
             dropout=0.0,
-            cnn_pretained=None
+            cnn_pretained=None,
+            teacher_forcing_ratio=0.5
         ):
         super(Seq2SeqGRU, self).__init__()
         self.conv_model = CNN(
@@ -602,6 +604,7 @@ class Seq2SeqGRU(nn.Module):
         self.out_dim = out_dim
         self.encoder = GRUEncoder(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim)
         self.decoder = GRUDecoder(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim, output_dim=out_dim, activation='relu')
+        self.teacher_forcing_ratio = teacher_forcing_ratio
     def forward(self, x, output_last=True,target=None):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
         outputs = torch.zeros(batch_size, timesteps, self.out_dim).to(x.device) # [batch_size, timesteps, out_dim]
@@ -616,7 +619,8 @@ class Seq2SeqGRU(nn.Module):
             # output, hidden = self.decoder(x, hidden, context)
             output, hidden = self.decoder(x, hidden)
             outputs[:, t, :] = output
-            if target is not None:
+            teacher_force = random.random() < self.teacher_forcing_ratio
+            if target is not None and teacher_force:
                 x = target[:, t, :].unsqueeze(1)
             else:
                 x = output.unsqueeze(1) # [batch_size, 1, out_dim]
