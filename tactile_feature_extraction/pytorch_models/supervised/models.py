@@ -524,6 +524,9 @@ class GRUEncoder(nn.Module):
         out, hidden = self.gru(x)
 
         hidden = self.fc(out[:, -1, :])
+        hidden = torch.tanh(hidden) # 作用是将hidden的值映射到-1到1之间
+        hidden = hidden.unsqueeze(0) # [1, batch_size, hidden_dim]
+
 
         return hidden
 
