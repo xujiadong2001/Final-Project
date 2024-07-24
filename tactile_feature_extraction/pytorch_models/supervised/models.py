@@ -515,10 +515,16 @@ class GRUEncoder(nn.Module):
     def __init__(self, input_dim, hidden_dim):
         super(GRUEncoder, self).__init__()
         self.hidden_dim = hidden_dim
-        self.gru = nn.GRU(input_dim, hidden_dim, batch_first=True)
+        # self.gru = nn.GRU(input_dim, hidden_dim, batch_first=True)
+        self.gru = nn.GRU(input_dim, hidden_dim, batch_first=True, bidirectional=True)
+
+        self.fc = nn.Linear(hidden_dim*2, hidden_dim)
 
     def forward(self, x):
         out, hidden = self.gru(x)
+
+        hidden = self.fc(out[:, -1, :])
+
         return hidden
 
 class GRUDecoder(nn.Module):
