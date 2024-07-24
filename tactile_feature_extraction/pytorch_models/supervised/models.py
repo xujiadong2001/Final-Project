@@ -739,13 +739,13 @@ class ConvLstm(nn.Module):
         self.Lstm = LSTMModel(
             input_dim=fc_layers[-1],
             hidden_dim=lstm_hidden_dim,
-            output_dim=out_dim,
+            output_dim=lstm_hidden_dim,
             num_layers=lstm_layers
         )
-        # self.output_layer = nn.Linear(lstm_hidden_dim, out_dim)
-        self.fc1 = nn.Linear(lstm_hidden_dim, 64)
         self.activation = nn.ReLU()
-        self.fc2 = nn.Linear(64, out_dim)
+        # self.output_layer = nn.Linear(lstm_hidden_dim, out_dim)
+        self.fc1 = nn.Linear(lstm_hidden_dim, out_dim)
+
     def forward(self, x):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
@@ -754,8 +754,9 @@ class ConvLstm(nn.Module):
         output = self.Lstm(lstm_input) # [batch_size, timesteps, lstm_hidden_dim]
         # lstm_output = lstm_output[:, -1, :]
         # output = self.output_layer(lstm_output)
-        #output = self.fc1(output)
-        #output = self.activation(output)
+        #
+        output = self.activation(output)
+        output = self.fc1(output)
         # output = self.fc2(output)
         return output
 
@@ -863,7 +864,7 @@ class ConvGRUAttention(nn.Module):
 
         self.gru = nn.GRU(fc_layers[-1], gru_hidden_dim, gru_layers, batch_first=True)
         self.attention = Attention2(gru_hidden_dim)
-        self.dropout = nn.Dropout(0.1)
+        # self.dropout = nn.Dropout(0.1)
         self.fc2 = nn.Linear(gru_hidden_dim, out_dim)
         # self.output_layer = nn.Linear(lstm_hidden_dim, out_dim)
     def forward(self, x):
@@ -1166,7 +1167,6 @@ class Seq2SeqGRUAttention(nn.Module):
         x = torch.zeros(batch_size, 1, self.out_dim).to(x.device)
         for t in range(0, timesteps):
             output, hidden, _ = self.decoder(x, hidden, encoder_outputs)
-
 
             outputs[:, t, :] = output
             if target is not None:
