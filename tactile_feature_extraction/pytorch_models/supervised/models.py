@@ -1064,12 +1064,17 @@ class Seq2SeqGRUAttention(nn.Module):
         conv_output = self.conv_model(conv_input)
         gru_input = conv_output.view(timesteps, batch_size,  -1) # [batch_size, timesteps, fc_layers[-1]]
         encoder_outputs, hidden = self.encoder(gru_input)
+
+        hidden = hidden.squeeze(0)  # [batch_size, hidden_dim]
+
+
+
         # x 全零向量
         x = torch.zeros(batch_size, 1, self.out_dim).to(x.device)
         for t in range(0, timesteps):
             # output, hidden, _ = self.decoder(x, hidden, encoder_outputs)
 
-            hidden = hidden.squeeze(0) # [batch_size, hidden_dim]
+
             output, hidden = self.decoder(x, hidden)
 
             outputs[:, t, :] = output
