@@ -1052,6 +1052,9 @@ class Seq2SeqGRUAttention(nn.Module):
         self.decoder = GRUDecoderAttention(input_dim=fc_layers[-1], hidden_dim=gru_hidden_dim, output_dim=out_dim, activation='relu')
     def forward(self, x, output_last=True,target=None):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
+        # 检验输入数据的维度是否正确
+        assert timesteps == 5
+        assert channel_x == 1
         outputs = torch.zeros(batch_size, timesteps, self.out_dim).to(x.device)
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
         conv_output = self.conv_model(conv_input)
