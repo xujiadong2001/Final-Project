@@ -787,11 +787,12 @@ class ConvGRU(nn.Module):
         self.GRU = GRUModel(
             input_dim=fc_layers[-1],
             hidden_dim=gru_hidden_dim,
-            output_dim=out_dim,
+            output_dim=gru_hidden_dim,
             num_layers=gru_layers
         )
         # self.fc = nn.Linear(gru_hidden_dim, 64)
-        # self.activation = nn.ReLU()
+        self.fc = nn.Linear(gru_hidden_dim, out_dim)
+        self.activation = nn.ReLU()
         # self.fc2 = nn.Linear(64, out_dim)
     def forward(self, x):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
@@ -799,7 +800,8 @@ class ConvGRU(nn.Module):
         conv_output = self.conv_model(conv_input)
         gru_input = conv_output.view(batch_size, timesteps, -1)
         output = self.GRU(gru_input)
-        # output = self.fc(output)
+        output = self.activation(output)
+        output = self.fc(output)
         # output = self.activation(output)
         # output = self.fc2(output)
         return output
@@ -855,7 +857,8 @@ class ConvGRUAttention(nn.Module):
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
         conv_output = self.conv_model(conv_input)
         gru_input = conv_output.view(batch_size, timesteps, -1)
-        output = self.gru(gru_input)
+        output,hidden = self.gru(gru_input)
+        attention_output = self.attention(hidden[-1], output)
 
         return output
 
@@ -1012,8 +1015,7 @@ class Attention(nn.Module):
         # encoder_outputs = [src length, batch size, encoder hidden dim * 2]
         batch_size = encoder_outputs.shape[1]
         src_length = encoder_outputs.shape[0]
-        assert src_length == 5
-        assert hidden.shape == torch.Size([batch_size, 128])
+
         # repeat decoder hidden state src_length times
         hidden = hidden.unsqueeze(1).repeat(1, src_length, 1)
         encoder_outputs = encoder_outputs.permute(1, 0, 2)
