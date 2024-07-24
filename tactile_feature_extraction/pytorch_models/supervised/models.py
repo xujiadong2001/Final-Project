@@ -1065,7 +1065,7 @@ class Seq2SeqGRUAttention(nn.Module):
         gru_input = conv_output.view(timesteps, batch_size,  -1) # [batch_size, timesteps, fc_layers[-1]]
         encoder_outputs, hidden = self.encoder(gru_input)
 
-        hidden = hidden.squeeze(0)  # [batch_size, hidden_dim]
+        hidden = hidden.unsqueeze(0)  # [batch_size, hidden_dim]
 
 
 
