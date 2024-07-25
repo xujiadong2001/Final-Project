@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import random
+import convlstm
 # from pytorch_model_summary import summary
 # from vit_pytorch.vit import ViT
 
@@ -150,6 +151,13 @@ def create_model(
             gru_hidden_dim=128,
             gru_layers=2,
             **model_params['model_kwargs']
+        ).to(device)
+    elif model_params['model_type'] == 'r_convlstm':
+        model = ConvLSTMWithFC(
+            in_dim=in_dim,
+            hidden_dim=128,
+            kernel_size=3,
+            num_layers=2,
         ).to(device)
 
     else:
@@ -1265,4 +1273,42 @@ class Seq2SeqGRUAttention(nn.Module):
         else:
             return outputs
 
+class ConvLSTMWithFC(nn.Module):
+    def __init__(self, input_dim, hidden_dim, kernel_size, num_layers,
+                 out_dim,  # 新增参数：输出类别数（对于分类任务）
+                 batch_first=True, bias=True, return_all_layers=False):
+        super(ConvLSTMWithFC, self).__init__()
+
+        # ConvLSTM层
+        self.convlstm = convlstm.ConvLSTM(input_dim=input_dim,
+                                 hidden_dim=hidden_dim,
+                                 kernel_size=kernel_size,
+                                 num_layers=num_layers,
+                                 batch_first=batch_first,
+                                 bias=bias,
+                                 return_all_layers=return_all_layers)
+
+        # 最后一个ConvLSTM层输出的特征图数量
+        last_hidden_dim = hidden_dim[-1] if isinstance(hidden_dim, list) else hidden_dim
+
+        # 全连接层
+        self.fc = nn.Linear(last_hidden_dim, out_dim)
+
+    def forward(self, x):
+        # 通过ConvLSTM层
+        output, _ = self.convlstm(x)
+
+        # 取最后一层的最后一个时间步的输出
+        # 假设输出是 batch_first 的形式
+        print(output.shape)
+        last_output = output[-1][:, -1, :, :, :]  # 形状 (batch, hidden_dim, height, width)
+
+        # 全局平均池化以降维
+        # 将 (batch, hidden_dim, height, width) 转换为 (batch, hidden_dim)
+        avg_pool = torch.mean(last_output, dim=[2, 3])
+
+        # 通过全连接层得到最终的预测输出
+        out = self.fc(avg_pool)
+
+        return out
 
