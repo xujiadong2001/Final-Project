@@ -157,7 +157,7 @@ def create_model(
             in_dim=1,
             out_dim=out_dim,
             hidden_dim=128,
-            kernel_size=(3, 3),
+            kernel_size=(1, 3),
             num_layers=1,
 
         ).to(device)
@@ -1481,7 +1481,7 @@ class ConvLSTMWithFC(nn.Module):
                                  return_all_layers=return_all_layers)
 
         # 最后一个ConvLSTM层输出的特征图数量
-        last_hidden_dim = hidden_dim*128*128
+        last_hidden_dim = hidden_dim*128*128*5
 
         # 全连接层
         self.fc = nn.Linear(last_hidden_dim, 128)
@@ -1490,12 +1490,13 @@ class ConvLSTMWithFC(nn.Module):
 
     def forward(self, x):
         # 通过ConvLSTM层
-        output, _ = self.convlstm(x)
+        output, _ = self.convlstm(x) # output: [batch_size, seq_len, hidden_dim, h, w]
+        output = output[0]
 
         # 取最后一层的最后一个时间步的输出
         # 假设输出是 batch_first 的形式
 
-        last_output = output[-1].reshape(output[-1].size(0), -1)
+        last_output = output.reshape(output.size(0), -1)
 
         # 全局平均池化以降维
         # 将 (batch, hidden_dim, height, width) 转换为 (batch, hidden_dim)
