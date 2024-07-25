@@ -1548,7 +1548,7 @@ class conv_TCN(nn.Module):
                 param.requires_grad = False
         # 移除最后一层全连接层
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
-        self.TCN = TemporalConvNet(num_inputs=fc_layers[-1], num_channels=[25,25,25,25], kernel_size=7, dropout=0.1)
+        self.TCN = TemporalConvNet(num_inputs=fc_layers[-1], num_channels=[25,25,25], kernel_size=7, dropout=0.1)
         self.fc1 = nn.Linear(25, out_dim)
 
     def forward(self, x):
