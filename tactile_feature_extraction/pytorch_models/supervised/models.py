@@ -1487,7 +1487,6 @@ class ConvLSTMWithFC(nn.Module):
             128,
             kernel_size=3,
             stride=1, padding=2)
-        )
         self.norm=nn.MaxPool3d(kernel_size=2, stride=2, padding=0)
         last_hidden_dim=128
         # 全连接层
