@@ -161,7 +161,7 @@ def create_model(
             num_layers=1,
 
         ).to(device)
-    elif model_params['model_type'] == 'conv_tcn':
+    elif model_params['model_type'] == 'conv_TCN':
         model = conv_TCN(
             in_dim=in_dim,
             in_channels=in_channels,
