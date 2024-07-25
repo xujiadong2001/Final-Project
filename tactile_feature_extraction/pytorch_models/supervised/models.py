@@ -157,7 +157,7 @@ def create_model(
             in_dim=1,
             out_dim=out_dim,
             hidden_dim=128,
-            kernel_size=(3),
+            kernel_size=(3,3),
             num_layers=1,
 
         ).to(device)
@@ -1455,8 +1455,6 @@ class ConvLSTM(nn.Module):
 
     @staticmethod
     def _check_kernel_size_consistency(kernel_size):
-        print(kernel_size)
-        print(type(kernel_size))
         if not (isinstance(kernel_size, tuple) or
                 (isinstance(kernel_size, list) and all([isinstance(elem, tuple) for elem in kernel_size]))):
             raise ValueError('`kernel_size` must be tuple or list of tuples')
