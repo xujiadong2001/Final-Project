@@ -1492,7 +1492,9 @@ class ConvLSTMWithFC(nn.Module):
 
         # 取最后一层的最后一个时间步的输出
         # 假设输出是 batch_first 的形式
-        print(output.shape)
+        for i in output:
+            print(i.shape)
+        raise
         last_output = output[-1][:, -1, :, :, :]  # 形状 (batch, hidden_dim, height, width)
 
         # 全局平均池化以降维
