@@ -1557,8 +1557,8 @@ class conv_TCN(nn.Module):
         conv_output = self.conv_model(conv_input)
         TCN_input = conv_output.view(batch_size, -1, timesteps) # [batch_size, hidden_dim, seq_len]
         output = self.TCN(TCN_input) # [batch_size, hidden_dim, seq_len]
-        output = self.fc1(output[:, :, -1])
-        return x
+        output = self.fc1(output[:, :, -1]) # [batch_size, hidden_dim]
+        return output
 
 
 class Chomp1d(nn.Module):
