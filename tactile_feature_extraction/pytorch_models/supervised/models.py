@@ -161,6 +161,14 @@ def create_model(
             num_layers=1,
 
         ).to(device)
+    elif model_params['model_type'] == 'conv_tcn':
+        model = conv_TCN(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            **model_params['model_kwargs']
+        ).to(device)
+
 
     else:
         raise ValueError('Incorrect model_type specified:  %s' % (model_params['model_type'],))
