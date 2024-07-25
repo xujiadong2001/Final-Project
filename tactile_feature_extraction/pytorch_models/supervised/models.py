@@ -1464,7 +1464,7 @@ class ConvLSTM(nn.Module):
         return param
 
 class ConvLSTMWithFC(nn.Module):
-    def __init__(self, input_dim, hidden_dim, kernel_size, num_layers,
+    def __init__(self, in_dim, hidden_dim, kernel_size, num_layers,
                  out_dim,  # 新增参数：输出类别数（对于分类任务）
                  batch_first=True, bias=True, return_all_layers=False):
         super(ConvLSTMWithFC, self).__init__()
