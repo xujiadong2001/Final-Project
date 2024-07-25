@@ -55,7 +55,7 @@ def setup_learning(save_dir=None):
         'adam_b1': 0.9,
         'adam_b2': 0.999,
         'shuffle': True,
-        'n_cpu': 11,
+        'n_cpu': 8,
         'l1_reg': 0.0000, # 0.0001
     }
 
