@@ -1548,8 +1548,8 @@ class conv_TCN(nn.Module):
                 param.requires_grad = False
         # 移除最后一层全连接层
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
-        self.TCN = TemporalConvNet(num_inputs=fc_layers[-1], num_channels=[64,128,128], kernel_size=3, dropout=0.1)
-        self.fc1 = nn.Linear(128, 32)
+        self.TCN = TemporalConvNet(num_inputs=fc_layers[-1], num_channels=[128,64,64], kernel_size=3, dropout=0.1)
+        self.fc1 = nn.Linear(32, 32)
         self.activation = nn.ReLU()
         self.fc2 = nn.Linear(32, out_dim)
 
