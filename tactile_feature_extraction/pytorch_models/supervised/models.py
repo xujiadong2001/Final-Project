@@ -1481,10 +1481,12 @@ class ConvLSTMWithFC(nn.Module):
                                  return_all_layers=return_all_layers)
 
         # 最后一个ConvLSTM层输出的特征图数量
-        last_hidden_dim = hidden_dim[-1] if isinstance(hidden_dim, list) else hidden_dim
+        last_hidden_dim = hidden_dim*128*128
 
         # 全连接层
-        self.fc = nn.Linear(last_hidden_dim, out_dim)
+        self.fc = nn.Linear(last_hidden_dim, 128)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(128, out_dim)
 
     def forward(self, x):
         # 通过ConvLSTM层
@@ -1493,14 +1495,16 @@ class ConvLSTMWithFC(nn.Module):
         # 取最后一层的最后一个时间步的输出
         # 假设输出是 batch_first 的形式
 
-        last_output = output[-1][:, -1, :, :, :]  # 形状 (batch, hidden_dim, height, width)
+        last_output = output[-1].reshape(output[-1].size(0), -1)
 
         # 全局平均池化以降维
         # 将 (batch, hidden_dim, height, width) 转换为 (batch, hidden_dim)
-        avg_pool = torch.mean(last_output, dim=[2, 3])
+        # avg_pool = torch.mean(last_output, dim=[2, 3])
 
         # 通过全连接层得到最终的预测输出
-        out = self.fc(avg_pool)
+        out = self.fc(last_output)
+        out = self.relu(out)
+        out = self.fc2(out)
 
         return out
 
