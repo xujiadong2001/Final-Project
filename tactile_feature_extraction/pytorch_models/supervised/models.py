@@ -1472,7 +1472,7 @@ class ConvLSTMWithFC(nn.Module):
         super(ConvLSTMWithFC, self).__init__()
 
         # ConvLSTM层
-        self.convlstm = ConvLSTM(input_dim=input_dim,
+        self.convlstm = ConvLSTM(input_dim=in_dim,
                                  hidden_dim=hidden_dim,
                                  kernel_size=kernel_size,
                                  num_layers=num_layers,
