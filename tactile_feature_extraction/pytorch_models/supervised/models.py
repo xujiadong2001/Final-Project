@@ -157,7 +157,7 @@ def create_model(
             in_dim=in_dim,
             out_dim=out_dim,
             hidden_dim=128,
-            kernel_size=(3, 3),
+            kernel_size=(7, 5),
             num_layers=2,
 
         ).to(device)
