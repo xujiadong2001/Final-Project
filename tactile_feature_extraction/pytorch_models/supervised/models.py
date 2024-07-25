@@ -102,6 +102,16 @@ def create_model(
             cnn_pretained=cnn_model_dir,
             **model_params['model_kwargs']
         ).to(device)
+    elif model_params['model_type'] == 'conv3d_gru':
+        model = CNN3DGRU(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            n_frames=5,
+            gru_hidden_dim=128,
+            gru_layers=2,
+            **model_params['model_kwargs']
+        ).to(device)
     elif model_params['model_type'] == 'seq2seq_gru':
         model = Seq2SeqGRU(
             in_dim=in_dim,
@@ -313,11 +323,79 @@ class CNN3D(nn.Module):
     def forward(self, x):
         # x batch_size, timesteps, channel_x, h_x, w_x
         x = x.permute(0, 2, 1, 3, 4)  # [batch_size, channel_x, timesteps, h_x, w_x]
-        x = self.cnn(x)
+        x = self.cnn(x) #
         x = x.reshape(x.shape[0], -1)
         x = self.fc(x)
         return x
 
+class CNN3DGRU(nn.Module):
+    def __init__(
+        self,
+        in_dim,
+        in_channels,
+        out_dim,
+        n_frames,
+        gru_hidden_dim=128,
+        gru_layers=2,
+        conv_layers=[16, 16, 16],
+        conv_kernel_sizes=[5, 5, 5],
+        fc_layers=[128, 128],
+        activation='relu',
+        apply_batchnorm=False,
+        dropout=0.0,
+    ):
+        super(CNN3DGRU, self).__init__()
+
+        assert len(conv_layers) > 0, "conv_layers must contain values"
+        assert len(fc_layers) > 0, "fc_layers must contain values"
+        assert len(conv_layers) == len(conv_kernel_sizes), "conv_layers must be same len as conv_kernel_sizes"
+
+        # add first layer to network
+        cnn_modules = []
+        cnn_modules.append(nn.Conv3d(in_channels, conv_layers[0], kernel_size=conv_kernel_sizes[0], stride=1, padding=2))
+        if apply_batchnorm:
+            cnn_modules.append(nn.BatchNorm3d(conv_layers[0]))
+        cnn_modules.append(nn.ReLU())
+        cnn_modules.append(nn.MaxPool3d(kernel_size=2, stride=2, padding=0))
+
+        # add the remaining conv layers by iterating through params
+        for idx in range(len(conv_layers) - 1):
+            cnn_modules.append(
+                nn.Conv3d(
+                    conv_layers[idx],
+                    conv_layers[idx + 1],
+                    kernel_size=conv_kernel_sizes[idx + 1],
+                    stride=1, padding=2)
+                )
+
+            if apply_batchnorm:
+                cnn_modules.append(nn.BatchNorm3d(conv_layers[idx+1]))
+
+            if activation == 'relu':
+                cnn_modules.append(nn.ReLU())
+            elif activation == 'elu':
+                cnn_modules.append(nn.ELU())
+            cnn_modules.append(nn.MaxPool3d(kernel_size=2, stride=2, padding=0))
+
+        # create cnn component of network
+        self.cnn = nn.Sequential(*cnn_modules)
+
+        # compute shape out of cnn by doing one forward pass
+        with torch.no_grad():
+            dummy_input = torch.zeros((1, in_channels,n_frames, *in_dim))
+            shape_out = self.cnn(dummy_input).shape
+        # (N, C, D, H, W)
+        self.GRU = nn.GRU(shape_out[1]*shape_out[3]*shape_out[4], gru_hidden_dim, gru_layers, batch_first=True)
+        self.fc = nn.Linear(gru_hidden_dim, out_dim)
+
+    def forward(self, x):
+        # x batch_size, timesteps, channel_x, h_x, w_x
+        x = x.permute(0, 2, 1, 3, 4)  # [batch_size, channel_x, timesteps, h_x, w_x]
+        x = self.cnn(x) #
+        x = x.reshape(x.shape[0], x.shape[2], -1) # [batch_size, timesteps, channel_x*h_x*w_x]
+        x, _ = self.GRU(x)
+        x = self.fc(x[:, -1, :])
+        return x
 
 class NatureCNN(nn.Module):
     """

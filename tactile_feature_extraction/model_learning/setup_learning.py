@@ -182,6 +182,15 @@ def setup_model(model_type, save_dir):
             'dropout': 0.0,
             'apply_batchnorm': True,
         }
+    elif model_type == 'conv3d_gru':
+        model_params['model_kwargs'] = {
+            'conv_layers': [32, 32, 32, 32],
+            'conv_kernel_sizes': [(3, 11, 11), (3, 9, 9), (3, 7, 7), (3, 5, 5)],
+            'fc_layers': [512, 512],
+            'activation': 'relu',
+            'dropout': 0.0,
+            'apply_batchnorm': True,
+        }
     elif model_type == 'seq2seq_gru_attention':
         model_params['model_kwargs'] = {
             'conv_layers': [32, 32, 32, 32],
