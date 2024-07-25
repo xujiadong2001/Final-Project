@@ -154,7 +154,7 @@ def create_model(
         ).to(device)
     elif model_params['model_type'] == 'r_convlstm':
         model = ConvLSTMWithFC(
-            in_dim=in_dim,
+            in_dim=1,
             out_dim=out_dim,
             hidden_dim=128,
             kernel_size=(7, 5),
