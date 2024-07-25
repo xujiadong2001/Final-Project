@@ -48,14 +48,14 @@ def setup_learning(save_dir=None):
         'seed': 42,
         'batch_size': 32,
         'epochs': 50, # 100
-        'lr': 8e-5, # 1e-4
+        'lr': 1e-5   # 8e-5, # 1e-4
         'lr_factor': 0.5,
         'lr_patience': 10,
         'adam_decay': 1e-5,
         'adam_b1': 0.9,
         'adam_b2': 0.999,
         'shuffle': True,
-        'n_cpu': 8,
+        'n_cpu': 11,
         'l1_reg': 0.0000, # 0.0001
     }
 
