@@ -1556,8 +1556,8 @@ class conv_TCN(nn.Module):
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
         conv_output = self.conv_model(conv_input)
         TCN_input = conv_output.view(batch_size, -1, timesteps) # [batch_size, hidden_dim, seq_len]
-        output = self.TCN(TCN_input)
-        output = self.fc1(output)
+        output = self.TCN(TCN_input) # [batch_size, hidden_dim, seq_len]
+        output = self.fc1(output[:, :, -1])
         return x
 
 
