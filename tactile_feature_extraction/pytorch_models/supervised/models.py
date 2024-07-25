@@ -1481,14 +1481,7 @@ class ConvLSTMWithFC(nn.Module):
                                  return_all_layers=return_all_layers)
 
         # 最后一个ConvLSTM层输出的特征图数量
-
-        self.cnn=nn.Conv3d(
-            128,
-            128,
-            kernel_size=3,
-            stride=1, padding=2)
-        self.norm=nn.MaxPool3d(kernel_size=2, stride=2, padding=0)
-        last_hidden_dim=128
+        last_hidden_dim = 128*128*5*128
         # 全连接层
         self.fc = nn.Linear(last_hidden_dim, 128)
         self.relu = nn.ReLU()
@@ -1503,8 +1496,6 @@ class ConvLSTMWithFC(nn.Module):
         # 假设输出是 batch_first 的形式
 
         last_output = output.reshape(output.size(0), -1)
-        last_output = self.cnn(last_output)
-        last_output = self.norm(last_output)
 
         # 全局平均池化以降维
         # 将 (batch, hidden_dim, height, width) 转换为 (batch, hidden_dim)
