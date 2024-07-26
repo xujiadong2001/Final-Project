@@ -929,13 +929,13 @@ class CNNLstmAttention(nn.Module):
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
         conv_output = self.conv_model(conv_input)
         lstm_input = conv_output.view(batch_size, timesteps, -1)
-        olstm_output, (hn, cn) = self.Lstm(lstm_input) # [batch_size, timesteps, lstm_hidden_dim]
+        lstm_output, (hn, cn) = self.Lstm(lstm_input) # [batch_size, timesteps, lstm_hidden_dim]
         # lstm_output = lstm_output[:, -1, :]
         # output = self.output_layer(lstm_output)
-        context_vector, attention_weights = self.attention(hn[-1], olstm_output)
+        context_vector, attention_weights = self.attention(hn[-1], lstm_output)
         output = self.fc1(context_vector)
-        output = self.activation(output)
-        output = self.fc1(output)
+        # output = self.activation(output)
+        # output = self.fc1(output)
         # output = self.fc2(output)
         return output
 
