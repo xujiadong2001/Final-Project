@@ -1876,7 +1876,7 @@ class seq2seq_transformer(nn.Module):
         self.transformer_decoder = nn.TransformerDecoder(decoder_layer, num_layers=num_decoder_layers)
         self.fc = nn.Linear(d_model, out_dim)
 
-    def forward(self, x,outlast=False,target=None):
+    def forward(self, x,output_last=False,target=None):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
         conv_output = self.conv_model(conv_input)
