@@ -117,21 +117,17 @@ def train_model_w_metrics(
             # forward pass, backward pass, optimize
             else:
                 with torch.no_grad():
+                    model.eval()
                     if model_type in seq2seq_list:
                         labels = labels.permute(0, 2, 1)  # [batch_size, timesteps, out_dim]
-                        if model_type == 'seq2seq_transformer':
-                            model.eval()
-                            fake_labels = torch.zeros_like(labels)
-                            outputs_tmp = model(inputs, output_last=False,target=fake_labels)
-                            model.train()
-                        else:
-                            outputs_tmp = model(inputs, output_last=False)
+                        outputs_tmp = model(inputs, output_last=False)
                         outputs = outputs_tmp.view(-1, outputs_tmp.size(-1))
 
                         labels = labels.contiguous().view(-1, labels.size(-1))
                         # labels = labels.view(-1, labels.size(-1))
                     else:
                         outputs = model(inputs)
+                    model.train()
 
             loss_size = loss(outputs, labels)
             epoch_batch_loss.append(loss_size.item())

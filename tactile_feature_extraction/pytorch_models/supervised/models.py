@@ -1882,12 +1882,31 @@ class seq2seq_transformer(nn.Module):
         conv_output = self.conv_model(conv_input)
         transformer_input = conv_output.view(timesteps,batch_size,  -1)
         transformer_input = self.positional_encoding(transformer_input)
-        # target [batch_size, timesteps, out_dim]
-        target = target.permute(1, 0, 2) # [timesteps, batch_size, out_dim]
-        target = self.decode_embedding(target)
-        target = self.positional_encoding(target)
-        encoder_output = self.transformer_encoder(transformer_input)
-        decoder_output = self.transformer_decoder(target, encoder_output)
-        decoder_output = decoder_output.permute(1, 0, 2) # [batch_size, timesteps, d_model]
-        output = self.fc(decoder_output)
-        return output
+
+        if target is None:
+            # 如果没有目标数据，初始化一个起始标记
+            # 注意：您需要根据模型的需求定义合适的起始标记
+            target = torch.zeros((1, batch_size, self.out_dim), device=x.device)
+            target = self.decode_embedding(target)
+            target = self.positional_encoding(target)
+            outputs = []
+
+            for i in range(5):  # 假设最大长度为100
+                encoder_output = self.transformer_encoder(transformer_input)
+                decoder_output = self.transformer_decoder(target, encoder_output)
+                current_output = self.fc(decoder_output[-1:, :, :])  # 获取最新输出
+                outputs.append(current_output)
+                target = torch.cat((target, self.decode_embedding(current_output)), dim=0)
+                target = self.positional_encoding(target)
+
+            return torch.cat(outputs, dim=0)
+        else:
+            # target [batch_size, timesteps, out_dim]
+            target = target.permute(1, 0, 2) # [timesteps, batch_size, out_dim]
+            target = self.decode_embedding(target)
+            target = self.positional_encoding(target)
+            encoder_output = self.transformer_encoder(transformer_input)
+            decoder_output = self.transformer_decoder(target, encoder_output)
+            decoder_output = decoder_output.permute(1, 0, 2) # [batch_size, timesteps, d_model]
+            output = self.fc(decoder_output)
+            return output
