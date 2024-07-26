@@ -21,7 +21,7 @@ from tactile_feature_extraction import BASE_MODEL_PATH
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-
+seq2seq_list = ['seq2seq_gru', 'seq2seq_gru_attention', 'seq2seq_transformer']
 def evaluate_model(
     task,
     model_type,
@@ -56,10 +56,11 @@ def evaluate_model(
         # wrap them in a Variable object
         inputs = Variable(inputs).float().to(device)
 
+
         # forward pass
         with torch.no_grad():
             outputs = model(inputs)
-        if model_type == 'seq2seq_gru' or model_type == 'seq2seq_gru_attention':
+        if model_type in seq2seq_list:
             labels_dict = {k: v[:, -1] for k, v in labels_dict.items()}
         # count correct for accuracy metric
         predictions_dict = label_encoder.decode_label(outputs)

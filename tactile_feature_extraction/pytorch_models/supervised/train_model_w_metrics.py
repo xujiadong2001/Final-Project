@@ -118,9 +118,15 @@ def train_model_w_metrics(
             else:
                 with torch.no_grad():
                     if model_type in seq2seq_list:
-                        outputs_tmp = model(inputs, output_last=False)
-                        outputs = outputs_tmp.view(-1, outputs_tmp.size(-1))
                         labels = labels.permute(0, 2, 1)  # [batch_size, timesteps, out_dim]
+                        if model_type == 'seq2seq_transformer':
+                            model.eval()
+                            outputs_tmp = model(inputs, output_last=False,target=labels)
+                            model.train()
+                        else:
+                            outputs_tmp = model(inputs, output_last=False)
+                        outputs = outputs_tmp.view(-1, outputs_tmp.size(-1))
+
                         labels = labels.contiguous().view(-1, labels.size(-1))
                         # labels = labels.view(-1, labels.size(-1))
                     else:
