@@ -1867,6 +1867,7 @@ class seq2seq_transformer(nn.Module):
         # 移除最后一层全连接层
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
         encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward)
+        self.out_dim = out_dim
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_encoder_layers)
         self.positional_encoding = PositionalEncoding(512)
         self.dropout = nn.Dropout(dropout)
