@@ -616,7 +616,9 @@ class TransformerModel(nn.Module):
         self.fc_out = nn.Linear(d_model, output_dim)
 
     def forward(self, src):
+
         src = self.embedding(src) * torch.sqrt(torch.tensor(self.d_model, dtype=torch.float32))
+
         src = self.pos_encoder(src)
         output = self.transformer_encoder(src)
         output = self.fc1(output[:, -1, :])
@@ -815,6 +817,7 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x):
+        # x: [seq_len, batch_size, d_model]
         x = x + self.pe[:x.size(0), :]
         return self.dropout(x)
 
@@ -1280,7 +1283,7 @@ class ConvTransformer(nn.Module):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
         conv_output = self.conv_model(conv_input)
-        transformer_input = conv_output.view(batch_size, timesteps, -1)
+        transformer_input = conv_output.view(timesteps,batch_size,  -1)
         output = self.transformer(transformer_input)
         return output
 
@@ -1851,17 +1854,23 @@ class seq2seq_transformer(nn.Module):
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
         encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_encoder_layers)
+        self.positional_encoding = PositionalEncoding(512)
         self.dropout = nn.Dropout(dropout)
+        self.decode_embedding = nn.Linear(out_dim, d_model)
+
         decoder_layer = nn.TransformerDecoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward)
         self.transformer_decoder = nn.TransformerDecoder(decoder_layer, num_layers=num_decoder_layers)
         self.fc = nn.Linear(d_model, out_dim)
 
-    def forward(self, x):
+    def forward(self, x,target=None):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
         conv_output = self.conv_model(conv_input)
         transformer_input = conv_output.view(batch_size, timesteps, -1)
+        transformer_input = self.positional_encoding(transformer_input)
+        target = self.decode_embedding(target)
+        target = self.positional_encoding(target)
         encoder_output = self.transformer_encoder(transformer_input)
-        decoder_output = self.transformer_decoder(transformer_input, encoder_output)
+        decoder_output = self.transformer_decoder(target, encoder_output) # 使用input作为target？
         output = self.fc(decoder_output)
         return output
