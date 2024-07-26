@@ -137,7 +137,7 @@ def setup_model(model_type, save_dir):
             'mlp_dim': 512,
             'pool': 'mean',  # for regression
         }
-    elif model_type == 'conv_lstm':
+    elif model_type == 'conv_lstm' or model_type == 'conv_lstm_attention':
         model_params['model_kwargs'] = {
             'conv_layers': [32, 32, 32, 32],
             'conv_kernel_sizes': [11, 9, 7, 5],
