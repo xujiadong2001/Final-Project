@@ -1139,9 +1139,9 @@ class TimeAttention(nn.Module):
         for t in range(timesteps):
             combined_input = torch.cat((input[:, t, :], hidden_states), dim=1)
             attention_weights = self.attention(combined_input) # [batch_size, 1]
-            attention_weights = self.softmax(attention_weights)
-            weighted_input = attention_weights * input[:, t, :]
-            weighted_sum = weighted_input.sum(dim=1)
+            attention_weights = self.softmax(attention_weights) #
+            weighted_input = attention_weights * input[:, t, :] # [batch_size, 128]
+            weighted_sum = torch.sum(weighted_input, dim=1, keepdim=True)
             hidden_states = weighted_sum + hidden_states
         output = self.fc(hidden_states)
         return output
