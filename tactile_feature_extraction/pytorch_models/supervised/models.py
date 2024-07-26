@@ -1129,6 +1129,7 @@ class TimeAttention(nn.Module):
         )
         self.softmax = nn.Softmax(dim=1)
         self.fc = nn.Linear(128, out_dim)
+        self.fc_update = nn.Linear(512, 128)
 
     def forward(self, x):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
@@ -1136,13 +1137,20 @@ class TimeAttention(nn.Module):
         conv_output = self.conv_model(conv_input)
         input = conv_output.view(batch_size, timesteps, -1)
         hidden_states = torch.zeros(batch_size, 128).to(x.device)
+        # 处理每个时间步
         for t in range(timesteps):
-            combined_input = torch.cat((input[:, t, :], hidden_states), dim=1)
-            attention_weights = self.attention(combined_input) # [batch_size, 1]
-            attention_weights = self.softmax(attention_weights) #
-            weighted_input = attention_weights * input[:, t, :] # [batch_size, 128]
-            hidden_states = torch.sum(weighted_input, dim=1) # [batch_size, 128]
+            combined_input = torch.cat((x[:, t, :], hidden_states), dim=1)  # 合并当前输入和隐藏状态
+            attention_weights = self.attention(combined_input)  # 计算注意力权重 [batch_size, 1]
+            attention_weights = self.softmax(attention_weights.view(batch_size, -1))  # Softmax标准化 [batch_size, 1]
+
+            # 重构输入以应用注意力权重
+            weighted_input = attention_weights.unsqueeze(-1) * x[:, t, :].unsqueeze(1) # [batch_size, 1, input_dim]
+            weighted_sum = weighted_input.sum(dim=1)  # 在时间步维度上求和
+
+            # 更新隐藏状态
+            hidden_states = self.fc_update(weighted_sum) + hidden_states
         output = self.fc(hidden_states)
+
         return output
 
 '''
