@@ -621,6 +621,8 @@ class TransformerModel(nn.Module):
 
         src = self.pos_encoder(src)
         output = self.transformer_encoder(src)
+        # output: [seq_len, batch_size, d_model]
+        output = output.permute(1, 0, 2) # [batch_size, seq_len, d_model]
         output = self.fc1(output[:, -1, :])
         output = self.activation(output)
         output = self.fc_out(output)
@@ -1866,8 +1868,10 @@ class seq2seq_transformer(nn.Module):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
         conv_output = self.conv_model(conv_input)
-        transformer_input = conv_output.view(batch_size, timesteps, -1)
+        transformer_input = conv_output.view(timesteps,batch_size,  -1)
         transformer_input = self.positional_encoding(transformer_input)
+        # target [batch_size, timesteps, out_dim]
+        target = target.permute(1, 0, 2) # [timesteps, batch_size, out_dim]
         target = self.decode_embedding(target)
         target = self.positional_encoding(target)
         encoder_output = self.transformer_encoder(transformer_input)
