@@ -820,7 +820,7 @@ class CNNLstm(nn.Module):
             dropout=0.0,
             cnn_pretained=None,
         ):
-        super(ConvLstm, self).__init__()
+        super(CNNLstm, self).__init__()
         self.conv_model = CNN(
             in_dim=in_dim,
             in_channels=in_channels,
@@ -865,6 +865,73 @@ class CNNLstm(nn.Module):
         output = self.fc1(output)
         # output = self.fc2(output)
         return output
+class CNNLstmAttention(nn.Module):
+    def __init__(
+            self,
+            in_dim,
+            in_channels,
+            out_dim,
+            lock_cnn=False,
+            lstm_hidden_dim=128,
+            lstm_layers=2,
+            conv_layers=[16, 16, 16],
+            conv_kernel_sizes=[5, 5, 5],
+            fc_layers=[128, 128],
+            activation='relu',
+            apply_batchnorm=False,
+            dropout=0.0,
+            cnn_pretained=None,
+        ):
+        super(CNNLstmAttention, self).__init__()
+        self.conv_model = CNN(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            conv_layers=conv_layers,
+            conv_kernel_sizes=conv_kernel_sizes,
+            fc_layers=fc_layers,
+            activation=activation,
+            apply_batchnorm=apply_batchnorm,
+            dropout=dropout
+        )
+        if cnn_pretained:
+            print('load cnn model from %s' % cnn_pretained)
+            self.conv_model.load_state_dict(torch.load(cnn_pretained))
+        else:
+            lock_cnn = False
+        if lock_cnn:
+            for param in self.conv_model.parameters():
+                param.requires_grad = False
+        # 移除最后一层全连接层
+        self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
+        self.Lstm = nn.LSTM(
+            input_size=fc_layers[-1],
+            hidden_size=lstm_hidden_dim,
+            num_layers=lstm_layers,
+            batch_first=True
+        )
+        self.activation = nn.ReLU()
+        self.attention = Attention2(lstm_hidden_dim)
+        # self.output_layer = nn.Linear(lstm_hidden_dim, out_dim)
+        self.fc1 = nn.Linear(lstm_hidden_dim, out_dim)
+
+    def forward(self, x):
+        batch_size, timesteps, channel_x, h_x, w_x = x.shape
+        conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
+        conv_output = self.conv_model(conv_input)
+        lstm_input = conv_output.view(batch_size, timesteps, -1)
+        olstm_output, (hn, cn) = self.Lstm(lstm_input) # [batch_size, timesteps, lstm_hidden_dim]
+        # lstm_output = lstm_output[:, -1, :]
+        # output = self.output_layer(lstm_output)
+        context_vector, attention_weights = self.attention(hn[-1], olstm_output)
+        output = self.fc1(context_vector)
+        output = self.activation(output)
+        output = self.fc1(output)
+        # output = self.fc2(output)
+        return output
+
+
+
 
 class ConvGRU(nn.Module):
     def __init__(
@@ -980,7 +1047,7 @@ class ConvGRUAttention(nn.Module):
         gru_input = conv_output.view(batch_size, timesteps, -1)
         output,hidden = self.gru(gru_input)
         context_vector, attention_weights = self.attention(hidden[-1], output)
-        context_vector = self.dropout(context_vector)
+        # context_vector = self.dropout(context_vector)
         output = self.fc2(context_vector)
         return output
 
