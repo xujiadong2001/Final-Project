@@ -1850,7 +1850,7 @@ class seq2seq_transformer(nn.Module):
             dropout=0.1,
             cnn_pretained=None
         ):
-        super(ConvTransformer, self).__init__()
+        super(seq2seq_transformer, self).__init__()
         self.conv_model = CNN(
             in_dim=in_dim,
             in_channels=in_channels,
