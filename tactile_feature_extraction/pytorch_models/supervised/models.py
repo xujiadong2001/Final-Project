@@ -1140,8 +1140,8 @@ class TimeAttention(nn.Module):
         input = conv_output.view(batch_size, timesteps, -1)
         hidden_states = torch.zeros(batch_size, 128).to(x.device)
         for t in range(timesteps):
-            temp_input = input[:, t, :]+self.position_embeddings[t]
-            temp_input = self.feature_update(temp_input)
+            temp_input = input[:, t, :]
+            temp_input = self.feature_update(temp_input)+self.position_embeddings[t]
             combined_input = torch.cat((temp_input, hidden_states), dim=1)
             attention_weights = self.attention(combined_input) # [batch_size, 1]
             attention_weights = self.softmax(attention_weights) #
