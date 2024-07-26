@@ -121,7 +121,8 @@ def train_model_w_metrics(
                         labels = labels.permute(0, 2, 1)  # [batch_size, timesteps, out_dim]
                         if model_type == 'seq2seq_transformer':
                             model.eval()
-                            outputs_tmp = model(inputs, output_last=False,target=labels)
+                            fake_labels = torch.zeros_like(labels)
+                            outputs_tmp = model(inputs, output_last=False,target=fake_labels)
                             model.train()
                         else:
                             outputs_tmp = model(inputs, output_last=False)
