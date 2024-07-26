@@ -121,7 +121,7 @@ def train_model_w_metrics(
                     if model_type in seq2seq_list:
                         labels = labels.permute(0, 2, 1)  # [batch_size, timesteps, out_dim]
                         outputs_tmp = model(inputs, output_last=False)
-                        outputs = outputs_tmp.view(-1, outputs_tmp.size(-1))
+                        outputs = outputs_tmp.reshape(-1, outputs_tmp.size(-1))
 
                         labels = labels.contiguous().view(-1, labels.size(-1))
                         # labels = labels.view(-1, labels.size(-1))
