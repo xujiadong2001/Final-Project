@@ -1122,8 +1122,10 @@ class TimeAttention(nn.Module):
                 param.requires_grad = False
         # 移除最后一层全连接层
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
+
+        self.position_embeddings = nn.Parameter(torch.randn(5, 128))
         self.attention = nn.Sequential(
-            nn.Linear(512 + 128, 128),
+            nn.Linear(128 + 128, 128),
             nn.Tanh(),
             nn.Linear(128, 1)
         )
@@ -1138,11 +1140,13 @@ class TimeAttention(nn.Module):
         input = conv_output.view(batch_size, timesteps, -1)
         hidden_states = torch.zeros(batch_size, 128).to(x.device)
         for t in range(timesteps):
-            combined_input = torch.cat((input[:, t, :], hidden_states), dim=1)
+            temp_input = input[:, t, :]+self.position_embeddings[t]
+            temp_input = self.feature_update(temp_input)
+            combined_input = torch.cat((temp_input, hidden_states), dim=1)
             attention_weights = self.attention(combined_input) # [batch_size, 1]
             attention_weights = self.softmax(attention_weights) #
             weighted_input = attention_weights * input[:, t, :] # [batch_size, 128]
-            hidden_states = self.feature_update(weighted_input) + hidden_states # [batch_size, 128]
+            hidden_states = weighted_input + hidden_states # [batch_size, 128]
         output = self.fc(hidden_states)
         return output
 
