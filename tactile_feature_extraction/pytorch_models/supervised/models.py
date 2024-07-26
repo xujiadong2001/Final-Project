@@ -1141,8 +1141,7 @@ class TimeAttention(nn.Module):
             attention_weights = self.attention(combined_input) # [batch_size, 1]
             attention_weights = self.softmax(attention_weights) #
             weighted_input = attention_weights * input[:, t, :] # [batch_size, 128]
-            weighted_sum = torch.sum(weighted_input, dim=1, keepdim=True)
-            hidden_states = weighted_sum + hidden_states
+            hidden_states = hidden_states + weighted_input
         output = self.fc(hidden_states)
         return output
 
