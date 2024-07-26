@@ -1078,6 +1078,66 @@ class Attention2(nn.Module):
         context_vector = (encoder_outputs * attention_weights.unsqueeze(2)).sum(dim=1)
         return context_vector, attention_weights
 
+class TimeAttention(nn.Module):
+    def __init__(
+            self,
+            in_dim,
+            in_channels,
+            out_dim,
+            lock_cnn=False,
+            conv_layers=[16, 16, 16],
+            conv_kernel_sizes=[5, 5, 5],
+            fc_layers=[128, 128],
+            activation='relu',
+            apply_batchnorm=False,
+            dropout=0.0,
+            cnn_pretained=None,
+        ):
+        super(TimeAttention, self).__init__()
+        self.conv_model = CNN(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            conv_layers=conv_layers,
+            conv_kernel_sizes=conv_kernel_sizes,
+            fc_layers=fc_layers,
+            activation=activation,
+            apply_batchnorm=apply_batchnorm,
+            dropout=dropout
+        )
+        if cnn_pretained:
+            print('load cnn model from %s' % cnn_pretained)
+            self.conv_model.load_state_dict(torch.load(cnn_pretained))
+        else:
+            lock_cnn = False
+        if lock_cnn:
+            for param in self.conv_model.parameters():
+                param.requires_grad = False
+        # 移除最后一层全连接层
+        self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
+        self.attention = nn.Sequential(
+            nn.Linear(128 + 128, 128),
+            nn.Tanh(),
+            nn.Linear(128, 1)
+        )
+        self.softmax = nn.Softmax(dim=1)
+        self.fc = nn.Linear(128, out_dim)
+
+    def forward(self, x):
+        batch_size, timesteps, channel_x, h_x, w_x = x.shape
+        conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
+        conv_output = self.conv_model(conv_input)
+        input = conv_output.view(batch_size, timesteps, -1)
+        hidden_states = torch.zeros(batch_size, 128).to(x.device)
+        for t in range(timesteps):
+            combined_input = torch.cat((input[:, t, :], hidden_states), dim=1)
+            attention_weights = self.attention(combined_input)
+            attention_weights = self.softmax(attention_weights)
+            weighted_input = attention_weights * input[:, t, :]
+            weighted_sum = torch.sum(weighted_input, dim=1)
+            hidden_states = weighted_sum + hidden_states
+        output = self.fc(hidden_states)
+        return output
 
 '''
 class Seq2SeqConvGRU(nn.Module):
