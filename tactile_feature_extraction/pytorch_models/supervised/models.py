@@ -1813,3 +1813,55 @@ class TemporalConvNet(nn.Module):
         """
         return self.network(x)
 
+class seq2seq_transformer(nn.Module):
+    def __init__(
+            self,
+            in_dim,
+            in_channels,
+            out_dim,
+            d_model=512,
+            nhead=8,
+            num_encoder_layers=6,
+            num_decoder_layers=6,
+            dim_feedforward=2048,
+            full_transformer=False,
+            conv_layers=[16, 16, 16],
+            conv_kernel_sizes=[5, 5, 5],
+            fc_layers=[128, 128],
+            activation='relu',
+            apply_batchnorm=False,
+            dropout=0.1,
+            cnn_pretained=None
+        ):
+        super(ConvTransformer, self).__init__()
+        self.conv_model = CNN(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            conv_layers=conv_layers,
+            conv_kernel_sizes=conv_kernel_sizes,
+            fc_layers=fc_layers,
+            activation=activation,
+            apply_batchnorm=apply_batchnorm,
+            dropout=dropout
+        )
+        if cnn_pretained:
+            self.conv_model.load_state_dict(torch.load(cnn_pretained))
+        # 移除最后一层全连接层
+        self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
+        encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward)
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_encoder_layers)
+        self.dropout = nn.Dropout(dropout)
+        decoder_layer = nn.TransformerDecoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward)
+        self.transformer_decoder = nn.TransformerDecoder(decoder_layer, num_layers=num_decoder_layers)
+        self.fc = nn.Linear(d_model, out_dim)
+
+    def forward(self, x):
+        batch_size, timesteps, channel_x, h_x, w_x = x.shape
+        conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
+        conv_output = self.conv_model(conv_input)
+        transformer_input = conv_output.view(batch_size, timesteps, -1)
+        encoder_output = self.transformer_encoder(transformer_input)
+        decoder_output = self.transformer_decoder(transformer_input, encoder_output)
+        output = self.fc(decoder_output)
+        return output
