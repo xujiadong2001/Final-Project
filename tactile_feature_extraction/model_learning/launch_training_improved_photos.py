@@ -56,8 +56,8 @@ def launch():
                     DataGenerator = PhotoDataset_ConvLstm
                 else:
                     DataGenerator = PhotoDataset_ConvLstm_2
-
-            elif model_type == 'seq2seq_gru' or model_type == 'seq2seq_gru_attention':
+            PhotoDataset_Seq2Seq_list = ['seq2seq_gru', 'seq2seq_gru_attention','seq2seq_transformer']
+            elif model_type in PhotoDataset_Seq2Seq_list:
                 DataGenerator = PhotoDataset_Seq2Seq
             else:
                 DataGenerator = PhotoDataset

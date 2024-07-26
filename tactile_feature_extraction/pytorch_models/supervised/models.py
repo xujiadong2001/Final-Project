@@ -186,7 +186,19 @@ def create_model(
             out_dim=out_dim,
             **model_params['model_kwargs']
         ).to(device)
-
+    elif model_params['model_type'] == 'seq2seq_transformer':
+        model = seq2seq_transformer(
+            in_dim=in_dim,
+            in_channels=in_channels,
+            out_dim=out_dim,
+            d_model=512,
+            nhead=8,
+            num_encoder_layers=3,
+            num_decoder_layers=3,
+            dim_feedforward=2048,
+            full_transformer=False,
+            **model_params['model_kwargs']
+        ).to(device)
     else:
         raise ValueError('Incorrect model_type specified:  %s' % (model_params['model_type'],))
 
@@ -1875,6 +1887,7 @@ class seq2seq_transformer(nn.Module):
         target = self.decode_embedding(target)
         target = self.positional_encoding(target)
         encoder_output = self.transformer_encoder(transformer_input)
-        decoder_output = self.transformer_decoder(target, encoder_output) # 使用input作为target？
+        decoder_output = self.transformer_decoder(target, encoder_output)
+        decoder_output = decoder_output.permute(1, 0, 2) # [batch_size, timesteps, d_model]
         output = self.fc(decoder_output)
         return output
