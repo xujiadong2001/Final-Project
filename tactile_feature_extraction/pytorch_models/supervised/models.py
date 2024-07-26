@@ -1123,7 +1123,7 @@ class TimeAttention(nn.Module):
         # 移除最后一层全连接层
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
         self.attention = nn.Sequential(
-            nn.Linear(128 + 128, 128),
+            nn.Linear(512 + 128, 128),
             nn.Tanh(),
             nn.Linear(128, 1)
         )
