@@ -5,7 +5,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import random
 from torch.nn.utils import weight_norm
-
 # from pytorch_model_summary import summary
 # from vit_pytorch.vit import ViT
 

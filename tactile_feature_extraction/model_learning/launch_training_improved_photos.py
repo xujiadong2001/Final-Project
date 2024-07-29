@@ -25,6 +25,7 @@ from tactile_feature_extraction import BASE_DATA_PATH
 from tactile_feature_extraction import BASE_MODEL_PATH
 from tactile_feature_extraction import SAVED_MODEL_PATH
 
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 def launch():
 
