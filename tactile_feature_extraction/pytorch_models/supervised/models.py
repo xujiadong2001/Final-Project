@@ -1297,7 +1297,8 @@ class ConvTransformer(nn.Module):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
         conv_output = self.conv_model(conv_input)
-        transformer_input = conv_output.view(timesteps,batch_size,  -1)
+        transformer_input = conv_output.view(batch_size,timesteps,  -1)
+        transformer_input = transformer_input.permute(1,0,2)
         output = self.transformer(transformer_input)
         return output
 
