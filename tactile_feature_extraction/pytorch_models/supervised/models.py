@@ -1899,7 +1899,8 @@ class seq2seq_transformer(nn.Module):
             for i in range(5):  # 假设最大长度为100
                 encoder_output = self.transformer_encoder(transformer_input)
                 decoder_output = self.transformer_decoder(target, encoder_output)
-                current_output = self.fc(decoder_output[-1:, :, :])  # 获取最新输出
+                # current_output = self.fc(decoder_output[-1:, :, :])  # 获取最新输出
+                current_output = decoder_output[-1:, :, :]
                 outputs.append(current_output)
                 target = torch.cat((target, self.decode_embedding(current_output)), dim=0)
                 target = self.positional_encoding(target)
