@@ -1904,7 +1904,8 @@ class seq2seq_transformer(nn.Module):
                 target = torch.cat((target, self.decode_embedding(current_output)), dim=0)
                 target = self.positional_encoding(target)
             output= torch.cat(outputs, dim=0) # [timesteps, batch_size, out_dim]
-            return output.permute(1, 0, 2) # [batch_size, timesteps, out_dim]
+            output = self.fc(output.permute(1, 0, 2))
+            return output # [batch_size, timesteps, out_dim]
         else:
             # target [batch_size, timesteps, out_dim]
             target = target.permute(1, 0, 2) # [timesteps, batch_size, out_dim]
