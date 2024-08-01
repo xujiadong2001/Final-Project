@@ -1430,7 +1430,9 @@ class Seq2SeqGRUAttention(nn.Module):
         outputs = torch.zeros(batch_size, timesteps, self.out_dim).to(x.device)
         conv_input = x.view(batch_size * timesteps, channel_x, h_x, w_x)
         conv_output = self.conv_model(conv_input)
-        gru_input = conv_output.view(timesteps, batch_size,  -1) # [src length, batch size, input_dim]
+        # gru_input = conv_output.view(timesteps, batch_size,  -1) # [src length, batch size, input_dim]
+        gru_input = conv_output.view(batch_size,timesteps,-1)
+        gru_input = gru_input.permute(1,0,2)
         encoder_outputs, hidden = self.encoder(gru_input)
         hidden = hidden.squeeze(0)
         # x 全零向量
