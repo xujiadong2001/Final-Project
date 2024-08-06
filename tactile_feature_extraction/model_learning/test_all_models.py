@@ -196,7 +196,7 @@ def launch():
                 R_square.append(eval_result[3])
                 model.train()
                 # 改名
-                rename_file(os.path.join(save_dir, 'best_model.pth',os.path.join(save_dir, 'best_model.pth_'+str(index))))
+                rename_file(os.path.join(save_dir, 'best_model.pth'),os.path.join(save_dir, 'best_model.pth_'+str(index)))
             with open(os.path.join(save_dir, 'model_result.txt'), 'w') as f:
                 f.write(model_type+':\n')
                 f.write('MAE:'+str(MAE)+'\n')
