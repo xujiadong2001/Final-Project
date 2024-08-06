@@ -77,14 +77,7 @@ def launch():
 
             # create the model
             seed_everything(learning_params['seed'])
-            model = create_model(
-                in_dim=in_dim,
-                in_channels=in_channels,
-                out_dim=out_dim,
-                model_params=model_params,
-                device=device,
-                # cnn_model_dir="collect_331_5D_surface/model/non_async/"+task+"/331/simple_cnn/best_model.pth"
-            )
+
             error_plotter = None
             combined_dirs = list(itertools.product(["linshear_surface_3d"], sensors))
             combined_paths = [os.path.join(*i) for i in combined_dirs]
@@ -112,6 +105,14 @@ def launch():
             # val_video_list = video_list[int(len(video_list)*0.8):]
             # K-FOLDs
             for index in range(5):
+                model = create_model(
+                    in_dim=in_dim,
+                    in_channels=in_channels,
+                    out_dim=out_dim,
+                    model_params=model_params,
+                    device=device,
+                    # cnn_model_dir="collect_331_5D_surface/model/non_async/"+task+"/331/simple_cnn/best_model.pth"
+                )
                 val_video_list = video_list[index*20:index*20+20]
                 train_video_list = video_list[:index*20]+video_list[index*20+20:]
 
