@@ -89,6 +89,7 @@ def evaluate_model(
     acc_df = acc_df.reset_index(drop=True).fillna(0.0)
     err_df = err_df.reset_index(drop=True).fillna(0.0)
     mse_df = mse_df.reset_index(drop=True).fillna(0.0)
+
     r_square = label_encoder.r_square_metric(targ_df, pred_df)
 
     print("Metrics")

@@ -350,8 +350,8 @@ class FTPoseEncoder:
 
             if label_name in [*POSE_LABEL_NAMES, *FT_LABEL_NAMES]:
                 # Calculate total sum of squares
-                y_true = labels[label_name].detach().cpu().numpy()
-                y_pred = predictions[label_name].detach().cpu().numpy()
+                y_true = labels[label_name]
+                y_pred = predictions[label_name]
                 ss_total = np.sum((y_true - np.mean(y_true)) ** 2)
                 # Calculate residual sum of squares
                 ss_residual = np.sum((y_true - y_pred) ** 2)
