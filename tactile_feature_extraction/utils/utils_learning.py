@@ -337,8 +337,6 @@ class FTPoseEncoder:
                     )**2
                     '''
                     raise
-            if mse_err == None:
-                raise
             mse_df[label_name] = mse_err
         return mse_df
 
@@ -383,7 +381,7 @@ class FTPoseEncoder:
                 r2 = 1 - (ss_residual / ss_total)
 
             r2_dict[label_name] = r2
-
+        r2_df = pd.DataFrame([r2_dict])
         return r2_dict
 
     def acc_metric(self, err_df):
