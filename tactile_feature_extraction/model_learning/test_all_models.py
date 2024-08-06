@@ -178,7 +178,8 @@ def launch():
                     learning_params,
                     save_dir,
                     error_plotter,
-                    device=device
+                    device=device,
+                    return_result= True
                 )
                 MAE.append(eval_result[0])
                 MSE.append(eval_result[1])
