@@ -382,7 +382,7 @@ class FTPoseEncoder:
 
             r2_dict[label_name] = r2
         r2_df = pd.DataFrame([r2_dict])
-        return r2_dict
+        return r2_df
 
     def acc_metric(self, err_df):
         """
