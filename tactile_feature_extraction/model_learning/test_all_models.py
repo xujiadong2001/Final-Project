@@ -117,7 +117,6 @@ def launch():
                     continue
 
                 val_video_list = video_list[index*int(len(video_list)/5):(index+1)*int(len(video_list)/5)]
-                print(val_video_list)
                 train_video_list = [i for i in video_list if i not in val_video_list]
 
                 # set generators and loaders
