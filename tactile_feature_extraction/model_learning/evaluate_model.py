@@ -49,7 +49,6 @@ def evaluate_model(
     pred_df = pd.DataFrame(columns=target_label_names)
     targ_df = pd.DataFrame(columns=target_label_names)
     mse_df = pd.DataFrame(columns=target_label_names)
-    r_square = pd.DataFrame(columns=target_label_names)
 
     for i, batch in enumerate(loader):
 
@@ -78,13 +77,11 @@ def evaluate_model(
         # get errors and accuracy
         batch_err_df, batch_acc_df = label_encoder.calc_batch_metrics(labels_dict, predictions_dict)
         batch_mse_df = label_encoder.mse_metric(labels_dict, predictions_dict)
-        batch_r_square = label_encoder.r_square_metric(labels_dict, predictions_dict)
 
         # append error to dataframe
         err_df = pd.concat([err_df, batch_err_df])
         acc_df = pd.concat([acc_df, batch_acc_df])
         mse_df = pd.concat([mse_df, batch_mse_df])
-        r_square = pd.concat([r_square, batch_r_square])
 
     # reset indices to be 0 -> test set size
     pred_df = pred_df.reset_index(drop=True).fillna(0.0)
@@ -92,7 +89,7 @@ def evaluate_model(
     acc_df = acc_df.reset_index(drop=True).fillna(0.0)
     err_df = err_df.reset_index(drop=True).fillna(0.0)
     mse_df = mse_df.reset_index(drop=True).fillna(0.0)
-    r_square = r_square.reset_index(drop=True).fillna(0.0)
+    r_square = label_encoder.r_square_metric(targ_df, pred_df)
 
     print("Metrics")
     print("evaluated_acc:")

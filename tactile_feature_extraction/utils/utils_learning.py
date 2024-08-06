@@ -353,12 +353,12 @@ class FTPoseEncoder:
                 y_true = labels[label_name].detach().cpu().numpy()
                 y_pred = predictions[label_name].detach().cpu().numpy()
                 ss_total = np.sum((y_true - np.mean(y_true)) ** 2)
-                if ss_total == 0:
-                    print(labels)
                 # Calculate residual sum of squares
                 ss_residual = np.sum((y_true - y_pred) ** 2)
                 # Calculate R^2 score
-                r2 = 1 - (ss_residual / ss_total)
+                if ss_total == 0:
+                    r2 = 1
+                else: r2 = 1 - (ss_residual / ss_total)
 
             elif label_name in ROT_LABEL_NAMES:
 
