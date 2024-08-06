@@ -26,7 +26,14 @@ from tactile_feature_extraction import BASE_MODEL_PATH
 from tactile_feature_extraction import SAVED_MODEL_PATH
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-
+def rename_file(old_name, new_name):
+    try:
+        os.rename(old_name, new_name)
+        print(f"File renamed from {old_name} to {new_name}")
+    except FileNotFoundError:
+        print(f"The file {old_name} does not exist")
+    except Exception as e:
+        print(f"Error occurred while renaming file: {e}")
 def launch():
 
     args = parse_args()
@@ -188,6 +195,8 @@ def launch():
                 Acc.append(eval_result[2])
                 R_square.append(eval_result[3])
                 model.train()
+                # 改名
+                rename_file(os.path.join(save_dir, 'best_model.pth',os.path.join(save_dir, 'best_model.pth_'+str(index))))
             with open(os.path.join(save_dir, 'model_result.txt'), 'w') as f:
                 f.write(model_type+':\n')
                 f.write('MAE:'+str(MAE)+'\n')
