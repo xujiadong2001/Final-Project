@@ -113,7 +113,11 @@ def launch():
                     device=device,
                     # cnn_model_dir="collect_331_5D_surface/model/non_async/"+task+"/331/simple_cnn/best_model.pth"
                 )
+                if index !=4:
+                    continue
+
                 val_video_list = video_list[index*int(len(video_list)/5):(index+1)*int(len(video_list)/5)]
+                print(val_video_list)
                 train_video_list = [i for i in video_list if i not in val_video_list]
 
                 # set generators and loaders
