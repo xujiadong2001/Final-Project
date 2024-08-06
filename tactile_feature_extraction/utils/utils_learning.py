@@ -321,7 +321,7 @@ class FTPoseEncoder:
         for label_name in self.target_label_names:
 
             if label_name in [*POS_LABEL_NAMES, *FT_LABEL_NAMES]:
-                mse_err = torch.mean(
+                mse_err = torch.abs(                # actually, we dont need abs here
                     (labels[label_name] - predictions[label_name])**2
                 ).detach().cpu().numpy()
             elif label_name in ROT_LABEL_NAMES:
@@ -331,7 +331,7 @@ class FTPoseEncoder:
                     pred_rot = predictions[label_name] * np.pi/180
 
                     # Calculate angle difference, taking into account periodicity (thanks ChatGPT)
-                    mse_err = torch.mean(
+                    mse_err = torch.abs(
                         torch.abs(
                             torch.atan2(torch.sin(targ_rot - pred_rot), torch.cos(targ_rot - pred_rot))
                         ).detach().cpu().numpy() * (180.0 / np.pi)
