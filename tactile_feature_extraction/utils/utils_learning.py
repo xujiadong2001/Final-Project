@@ -336,7 +336,7 @@ class FTPoseEncoder:
                         ).detach().cpu().numpy() * (180.0 / np.pi)
                     )**2
                     '''
-                raise
+                    raise
             mse_df[label_name] = mse_err
         return mse_df
 
