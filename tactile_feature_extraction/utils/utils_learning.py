@@ -321,52 +321,68 @@ class FTPoseEncoder:
         for label_name in self.target_label_names:
 
             if label_name in [*POS_LABEL_NAMES, *FT_LABEL_NAMES]:
-                mse_err = torch.abs(                # actually, we dont need abs here
-                    (labels[label_name] - predictions[label_name])**2
-                ).detach().cpu().numpy()
+                mse_err = ((labels[label_name] - predictions[label_name])**2).detach().cpu().numpy()
             elif label_name in ROT_LABEL_NAMES:
 
                     # convert rad
                     targ_rot = labels[label_name] * np.pi/180
                     pred_rot = predictions[label_name] * np.pi/180
 
+                    '''
                     # Calculate angle difference, taking into account periodicity (thanks ChatGPT)
                     mse_err = torch.abs(
                         torch.abs(
                             torch.atan2(torch.sin(targ_rot - pred_rot), torch.cos(targ_rot - pred_rot))
                         ).detach().cpu().numpy() * (180.0 / np.pi)
                     )**2
+                    '''
+                raise
             mse_df[label_name] = mse_err
         return mse_df
 
     def r_square_metric(self, labels, predictions):
         """
-        R-squared metric for regression problem, returns dict of R-squared in interpretable units.
-        Position R-squared, Rotation R-squared.
+        R^2 (coefficient of determination) metric for regression problem, returns a dictionary of R^2 scores.
+        Position error (mm), Rotation error (degrees).
         """
-        r_square_df = pd.DataFrame(columns=POSE_LABEL_NAMES)
+        r2_dict = {}
         for label_name in self.target_label_names:
 
-            if label_name in [*POS_LABEL_NAMES, *FT_LABEL_NAMES]:
-                tss = torch.sum((labels[label_name] - torch.mean(labels[label_name])) ** 2).detach().cpu().numpy()
-                rss = torch.sum((labels[label_name] - predictions[label_name]) ** 2).detach().cpu().numpy()
-                r_square = 1 - (rss / tss)
+            if label_name in [*POSE_LABEL_NAMES, *FT_LABEL_NAMES]:
+                # Calculate total sum of squares
+                y_true = labels[label_name].detach().cpu().numpy()
+                y_pred = predictions[label_name].detach().cpu().numpy()
+                ss_total = np.sum((y_true - np.mean(y_true)) ** 2)
+                # Calculate residual sum of squares
+                ss_residual = np.sum((y_true - y_pred) ** 2)
+                # Calculate R^2 score
+                r2 = 1 - (ss_residual / ss_total)
 
             elif label_name in ROT_LABEL_NAMES:
-                # convert rad
+
+                # Convert degrees to radians
                 targ_rot = labels[label_name] * np.pi / 180
                 pred_rot = predictions[label_name] * np.pi / 180
 
                 # Calculate angle difference, taking into account periodicity
-                angle_diff = torch.atan2(torch.sin(targ_rot - pred_rot),
-                                         torch.cos(targ_rot - pred_rot)).detach().cpu().numpy() * (180.0 / np.pi)
-                tss = torch.sum((angle_diff - torch.mean(angle_diff)) ** 2)
-                rss = torch.sum((angle_diff - predictions[label_name]) ** 2)
-                r_square = 1 - (rss / tss)
+                angle_diff = torch.atan2(torch.sin(targ_rot - pred_rot), torch.cos(targ_rot - pred_rot))
+                angle_diff_np = angle_diff.detach().cpu().numpy() * (180.0 / np.pi)
 
-            r_square_df[label_name] = r_square
+                # Calculate total sum of squares for angles
+                y_true = labels[label_name].detach().cpu().numpy()
+                y_true_rad = y_true * np.pi / 180
+                y_mean_rad = np.mean(y_true_rad)
+                ss_total = np.sum((y_true_rad - y_mean_rad) ** 2) * (180.0 / np.pi) ** 2
 
-        return r_square_df
+                # Calculate residual sum of squares for angles
+                ss_residual = np.sum(angle_diff_np ** 2)
+
+                # Calculate R^2 score
+                r2 = 1 - (ss_residual / ss_total)
+
+            r2_dict[label_name] = r2
+
+        return r2_dict
 
     def acc_metric(self, err_df):
         """
