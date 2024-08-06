@@ -56,7 +56,6 @@ def evaluate_model(
         # get inputs
         inputs, labels_dict = batch['images'], batch['labels']
 
-        print(labels_dict)
 
         # wrap them in a Variable object
         inputs = Variable(inputs).float().to(device)
