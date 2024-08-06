@@ -28,7 +28,8 @@ def train_model_w_metrics(
     save_dir,
     error_plotter=None,
     calculate_train_metrics=False,
-    device='cpu'
+    device='cpu',
+    return_result = False
 ):
     # tensorboard writer for tracking vars
     writer = SummaryWriter(os.path.join(save_dir, 'tensorboard_runs'))
@@ -305,6 +306,7 @@ def train_model_w_metrics(
         model.state_dict(),
         os.path.join(save_dir, 'final_model.pth')
     )
+
 
 
 

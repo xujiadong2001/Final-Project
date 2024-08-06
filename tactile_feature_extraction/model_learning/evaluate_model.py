@@ -31,7 +31,8 @@ def evaluate_model(
     learning_params,
     save_dir,
     error_plotter,
-    device='cpu'
+    device='cpu',
+    return_result= False
 ):
 
     loader = torch.utils.data.DataLoader(
@@ -47,6 +48,8 @@ def evaluate_model(
     err_df = pd.DataFrame(columns=target_label_names)
     pred_df = pd.DataFrame(columns=target_label_names)
     targ_df = pd.DataFrame(columns=target_label_names)
+    mse_df = pd.DataFrame(columns=target_label_names)
+    r_square = pd.DataFrame(columns=target_label_names)
 
     for i, batch in enumerate(loader):
 
@@ -73,16 +76,22 @@ def evaluate_model(
 
         # get errors and accuracy
         batch_err_df, batch_acc_df = label_encoder.calc_batch_metrics(labels_dict, predictions_dict)
+        batch_mse_df = label_encoder.mse_metric(labels_dict, predictions_dict)
+        batch_r_square = label_encoder.r_square_metric(labels_dict, predictions_dict)
 
         # append error to dataframe
         err_df = pd.concat([err_df, batch_err_df])
         acc_df = pd.concat([acc_df, batch_acc_df])
+        mse_df = pd.concat([mse_df, batch_mse_df])
+        r_square = pd.concat([r_square, batch_r_square])
 
     # reset indices to be 0 -> test set size
     pred_df = pred_df.reset_index(drop=True).fillna(0.0)
     targ_df = targ_df.reset_index(drop=True).fillna(0.0)
     acc_df = acc_df.reset_index(drop=True).fillna(0.0)
     err_df = err_df.reset_index(drop=True).fillna(0.0)
+    mse_df = mse_df.reset_index(drop=True).fillna(0.0)
+    r_square = r_square.reset_index(drop=True).fillna(0.0)
 
     print("Metrics")
     print("evaluated_acc:")
@@ -99,11 +108,19 @@ def evaluate_model(
         f.write('evaluated_err:\n')
         f.write(str(err_df[target_label_names].mean()))
         f.write('\n')
-
+    '''
     # plot full error graph
     error_plotter.final_plot(
         pred_df, targ_df, err_df
     )
+    '''
+    acc=acc_df[[*target_label_names, 'overall_acc']].mean()
+    MAE=err_df[target_label_names].mean()
+    MSE = mse_df[target_label_names].mean()
+    R_square = r_square[target_label_names].mean()
+
+    if return_result:
+        return [MAE,MSE,acc,R_square] # 加一些评估方法
 
 
 if __name__ == "__main__":

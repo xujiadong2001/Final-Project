@@ -312,6 +312,62 @@ class FTPoseEncoder:
 
         return err_df
 
+    def mse_metric(self, labels,predictions):
+        """
+        MSE metric for regression problem, returns dict of errors in interpretable units.
+        Position error (mm), Rotation error (degrees).
+        """
+        mse_df = pd.DataFrame(columns=POSE_LABEL_NAMES)
+        for label_name in self.target_label_names:
+
+            if label_name in [*POS_LABEL_NAMES, *FT_LABEL_NAMES]:
+                mse_err = torch.mean(
+                    (labels[label_name] - predictions[label_name])**2
+                ).detach().cpu().numpy()
+            elif label_name in ROT_LABEL_NAMES:
+
+                    # convert rad
+                    targ_rot = labels[label_name] * np.pi/180
+                    pred_rot = predictions[label_name] * np.pi/180
+
+                    # Calculate angle difference, taking into account periodicity (thanks ChatGPT)
+                    mse_err = torch.mean(
+                        torch.abs(
+                            torch.atan2(torch.sin(targ_rot - pred_rot), torch.cos(targ_rot - pred_rot))
+                        ).detach().cpu().numpy() * (180.0 / np.pi)
+                    )**2
+            mse_df[label_name] = mse_err
+        return mse_df
+
+    def r_square_metric(self, labels, predictions):
+        """
+        R-squared metric for regression problem, returns dict of R-squared in interpretable units.
+        Position R-squared, Rotation R-squared.
+        """
+        r_square_df = pd.DataFrame(columns=POSE_LABEL_NAMES)
+        for label_name in self.target_label_names:
+
+            if label_name in [*POS_LABEL_NAMES, *FT_LABEL_NAMES]:
+                tss = torch.sum((labels[label_name] - torch.mean(labels[label_name])) ** 2).detach().cpu().numpy()
+                rss = torch.sum((labels[label_name] - predictions[label_name]) ** 2).detach().cpu().numpy()
+                r_square = 1 - (rss / tss)
+
+            elif label_name in ROT_LABEL_NAMES:
+                # convert rad
+                targ_rot = labels[label_name] * np.pi / 180
+                pred_rot = predictions[label_name] * np.pi / 180
+
+                # Calculate angle difference, taking into account periodicity
+                angle_diff = torch.atan2(torch.sin(targ_rot - pred_rot),
+                                         torch.cos(targ_rot - pred_rot)).detach().cpu().numpy() * (180.0 / np.pi)
+                tss = torch.sum((angle_diff - torch.mean(angle_diff)) ** 2)
+                rss = torch.sum((angle_diff - predictions[label_name]) ** 2)
+                r_square = 1 - (rss / tss)
+
+            r_square_df[label_name] = r_square
+
+        return r_square_df
+
     def acc_metric(self, err_df):
         """
         Accuracy metric for regression problem, counting the number of predictions within a tolerance.

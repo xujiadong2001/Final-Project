@@ -1902,8 +1902,8 @@ class seq2seq_transformer(nn.Module):
                 # current_output = self.fc(decoder_output[-1:, :, :])  # 获取最新输出
                 current_output = decoder_output[-1:, :, :]
                 outputs.append(current_output)
-                target = torch.cat((target, self.decode_embedding(current_output)), dim=0)
-                target = self.positional_encoding(target)
+                target = torch.cat((target, self.decode_embedding(current_output)), dim=0) # 考虑先全预测完再解码
+                target = self.positional_encoding(target) # 每一次都要编码吗？
             output= torch.cat(outputs, dim=0) # [timesteps, batch_size, out_dim]
             output = self.fc(output.permute(1, 0, 2))
             return output # [batch_size, timesteps, out_dim]
@@ -1917,3 +1917,25 @@ class seq2seq_transformer(nn.Module):
             decoder_output = decoder_output.permute(1, 0, 2) # [batch_size, timesteps, d_model]
             output = self.fc(decoder_output)
             return output
+
+'''Traceback (most recent call last):
+  File "tactile_feature_extraction/model_learning/launch_training_improved_photos.py", line 185, in <module>
+    launch()
+  File "tactile_feature_extraction/model_learning/launch_training_improved_photos.py", line 139, in launch
+    train_model_w_metrics(
+  File "/root/autodl-tmp/Final-Project/tactile_feature_extraction/pytorch_models/supervised/train_model_w_metrics.py", line 211, in train_model_w_metrics
+    val_epoch_loss, val_epoch_acc, val_acc_df, val_err_df, val_pred_df, val_targ_df = run_epoch(
+  File "/root/autodl-tmp/Final-Project/tactile_feature_extraction/pytorch_models/supervised/train_model_w_metrics.py", line 123, in run_epoch
+    outputs_tmp = model(inputs, output_last=False)
+  File "/root/miniconda3/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/root/autodl-tmp/Final-Project/tactile_feature_extraction/pytorch_models/supervised/models.py", line 1905, in forward
+    target = torch.cat((target, self.decode_embedding(current_output)), dim=0)
+  File "/root/miniconda3/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/root/miniconda3/lib/python3.8/site-packages/torch/nn/modules/linear.py", line 103, in forward
+    return F.linear(input, self.weight, self.bias)
+  File "/root/miniconda3/lib/python3.8/site-packages/torch/nn/functional.py", line 1848, in linear
+    return torch._C._nn.linear(input, weight, bias)
+RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x512 and 3x512)
+'''
