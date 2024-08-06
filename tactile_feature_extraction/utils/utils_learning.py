@@ -337,6 +337,8 @@ class FTPoseEncoder:
                     )**2
                     '''
                     raise
+            if mse_err == None:
+                raise
             mse_df[label_name] = mse_err
         return mse_df
 
