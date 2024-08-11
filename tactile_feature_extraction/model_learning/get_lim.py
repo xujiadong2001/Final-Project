@@ -40,7 +40,7 @@ train_generator = PhotoDataset_combinexy(
 min=100
 max=-100
 for i in range(len(train_generator)):
-    x,y = train_generator[i]
+    x,y = train_generator[i]['labels']
     if float(x[0])>max:
         max=float(x[0])
     if float(x[0])<min:
