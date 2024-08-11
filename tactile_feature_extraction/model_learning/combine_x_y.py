@@ -38,7 +38,7 @@ def launch():
 
     args = parse_args()
     async_data = args.async_data
-    tasks = "combine_x_y"
+    tasks = {"combine_x_y"}
     sensors = args.sensors
     models = args.models
     device = args.device
