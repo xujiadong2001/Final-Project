@@ -235,6 +235,9 @@ def setup_task(task_name):
     elif task_name == 'Fz':
         out_dim = 1
         label_names = ['Fz']
+    elif task_name == 'combine_x_y':
+        out_dim = 2
+        label_names = ['Fxy', 'Fz']
 
     else:
         raise ValueError('Incorrect task_name specified: {}'.format(task_name))
