@@ -28,7 +28,7 @@ from tactile_feature_extraction import SAVED_MODEL_PATH
 photos_dir = 'collect_331_5D_surface/videos'
 labels_dir = 'collect_331_5D_surface/time_series'
 n_frames = 10
-video_list = [f for f in os.listdir(photos_dir)]
+train_video_list = [f for f in os.listdir(photos_dir)]
 train_generator = PhotoDataset_combinexy(
                     photos_dir,
                     labels_dir,
