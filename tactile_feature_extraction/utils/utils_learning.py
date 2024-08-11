@@ -211,7 +211,7 @@ class FTPoseEncoder:
             elif label_name == 'Fxy':
                 llim = 0.00054418
                 ulim = 5.97044428
-                norm_target = (((Fxy - llim) / (ulim - llim)) * 2) - 1
+                norm_target = (((target - llim) / (ulim - llim)) * 2) - 1
                 encoded_pose.append(norm_target.unsqueeze(dim=1))
 
 
