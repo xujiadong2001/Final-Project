@@ -41,8 +41,8 @@ min=100
 max=-100
 for i in range(len(train_generator)):
     x,y = train_generator[i]
-    if x[0]>max:
-        max=x[0]
-    if x[0]<min:
-        min=x[0]
+    if float(x[0])>max:
+        max=float(x[0])
+    if float(x[0])<min:
+        min=float(x[0])
 print(min,max)
