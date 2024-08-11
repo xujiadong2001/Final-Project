@@ -280,6 +280,13 @@ class FTPoseEncoder:
                 decoded_predictions = (((predictions + 1) / 2) * (ulim - llim)) + llim
                 decoded_pose[label_name] = decoded_predictions
                 label_name_idx += 1
+            elif label_name == 'Fxy':
+                predictions = outputs[:, label_name_idx].detach().cpu()
+                llim = 0.00054418
+                ulim = 5.97044428
+                decoded_predictions = (((predictions + 1) / 2) * (ulim - llim)) + llim
+                decoded_pose[label_name] = decoded_predictions
+                label_name_idx += 1
 
         return decoded_pose
 
@@ -299,7 +306,7 @@ class FTPoseEncoder:
         err_df = pd.DataFrame(columns=POSE_LABEL_NAMES)
         for label_name in self.target_label_names:
 
-            if label_name in [*POS_LABEL_NAMES, *FT_LABEL_NAMES]:
+            if label_name in [*POS_LABEL_NAMES, *FT_LABEL_NAMES,'Fxy']:
                 abs_err = torch.abs(
                     labels[label_name] - predictions[label_name]
                 ).detach().cpu().numpy()
@@ -327,7 +334,7 @@ class FTPoseEncoder:
         mse_df = pd.DataFrame(columns=POSE_LABEL_NAMES)
         for label_name in self.target_label_names:
 
-            if label_name in [*POS_LABEL_NAMES, *FT_LABEL_NAMES]:
+            if label_name in [*POS_LABEL_NAMES, *FT_LABEL_NAMES,'Fxy']:
                 mse_err = ((labels[label_name] - predictions[label_name])**2).detach().cpu().numpy()
             elif label_name in ROT_LABEL_NAMES:
 
@@ -355,7 +362,7 @@ class FTPoseEncoder:
         r2_dict = {}
         for label_name in self.target_label_names:
 
-            if label_name in [*POSE_LABEL_NAMES, *FT_LABEL_NAMES]:
+            if label_name in [*POSE_LABEL_NAMES, *FT_LABEL_NAMES,'Fxy']:
                 # Calculate total sum of squares
                 y_true = labels[label_name]
                 y_pred = predictions[label_name]
@@ -419,6 +426,10 @@ class FTPoseEncoder:
             if label_name in TORQUE_LABEL_NAMES:
                 abs_err = err_df[label_name]
                 correct = (abs_err < TORQUE_TOL)
+
+            if label_name == 'Fxy':
+                abs_err = err_df[label_name]
+                correct = (abs_err < FORCE_TOL)
 
             overall_correct = overall_correct & correct
             acc_df[label_name] = correct.astype(np.float32)
