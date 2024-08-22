@@ -1272,25 +1272,15 @@ class ConvTransformer(nn.Module):
             self.conv_model.load_state_dict(torch.load(cnn_pretained))
         # 移除最后一层全连接层
         self.conv_model.fc = nn.Sequential(*list(self.conv_model.fc.children())[:-1])
-        if full_transformer:
-            self.transformer = FullTransformerModel(
-                input_dim=fc_layers[-1],
-                d_model=d_model,
-                nhead=nhead,
-                num_encoder_layers=num_encoder_layers,
-                num_decoder_layers=num_decoder_layers,
-                dim_feedforward=dim_feedforward,
-                output_dim=out_dim
-            )
-        else:
-            self.transformer = TransformerModel(
-                input_dim=fc_layers[-1],
-                d_model=d_model,
-                nhead=nhead,
-                num_encoder_layers=num_encoder_layers,
-                dim_feedforward=dim_feedforward,
-                output_dim=out_dim
-            )
+
+        self.transformer = TransformerModel(
+            input_dim=fc_layers[-1],
+            d_model=d_model,
+            nhead=nhead,
+            num_encoder_layers=num_encoder_layers,
+            dim_feedforward=dim_feedforward,
+            output_dim=out_dim
+        )
 
     def forward(self, x):
         batch_size, timesteps, channel_x, h_x, w_x = x.shape
