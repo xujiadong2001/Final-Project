@@ -200,7 +200,7 @@ def launch():
                 # 改名
                 rename_file(os.path.join(save_dir, 'best_model.pth'),os.path.join(save_dir, 'best_model.pth_'+str(n_frames)))
             with open(os.path.join(save_dir, 'model_result.txt'), 'w') as f:
-                f.write(n_frames+':\n')
+                f.write(str(n_frames)+':\n')
                 f.write('MAE:'+str(MAE)+'\n')
                 f.write('MAE_mean:'+str(np.mean(MAE))+'\n')
                 f.write('MSE:'+str(MSE)+'\n')
