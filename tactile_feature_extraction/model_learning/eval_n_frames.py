@@ -80,18 +80,14 @@ def launch():
                 os.path.join(BASE_DATA_PATH, data_path, "val")
                 for data_path in combined_paths
             ]
-
             photos_dir = 'collect_331_5D_surface/videos'
             labels_dir = 'collect_331_5D_surface/time_series'
 
             video_list = [f for f in os.listdir(photos_dir)]
-            # 打乱数据
-
             val_video_list = video_list[3 * int(len(video_list) / 5):(3 + 1) * int(len(video_list) / 5)]
             train_video_list = [i for i in video_list if i not in val_video_list]
 
             np.random.shuffle(video_list)
-            ft_pose_limits = get_ft_pose_limits(val_data_dirs, save_dir)
 
             for n_frames in n_frames_list:
                 # 读取已保存的模型
