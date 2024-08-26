@@ -195,16 +195,17 @@ def launch():
                 model.train()
                 # 改名
                 rename_file(os.path.join(save_dir, 'best_model.pth'),os.path.join(save_dir, 'best_model.pth_'+str(n_frames)))
-            with open(os.path.join(save_dir, 'model_result.txt'), 'w') as f:
-                f.write(str(n_frames)+':\n')
-                f.write('MAE:'+str(MAE)+'\n')
-                f.write('MAE_mean:'+str(np.mean(MAE))+'\n')
-                f.write('MSE:'+str(MSE)+'\n')
-                f.write('MSE_mean:'+str(np.mean(MSE))+'\n')
-                f.write('Acc:'+str(Acc)+'\n')
-                f.write('Acc_mean:'+str(np.mean(Acc))+'\n')
-                f.write('R_square:'+str(R_square)+'\n')
-                f.write('R_square_mean:'+str(np.mean(R_square))+'\n')
+
+                with open(os.path.join(save_dir, 'model_result.txt'), 'w') as f:
+                    f.write(str(n_frames)+':\n')
+                    f.write('MAE:'+str(MAE)+'\n')
+                    f.write('MAE_mean:'+str(np.mean(MAE))+'\n')
+                    f.write('MSE:'+str(MSE)+'\n')
+                    f.write('MSE_mean:'+str(np.mean(MSE))+'\n')
+                    f.write('Acc:'+str(Acc)+'\n')
+                    f.write('Acc_mean:'+str(np.mean(Acc))+'\n')
+                    f.write('R_square:'+str(R_square)+'\n')
+                    f.write('R_square_mean:'+str(np.mean(R_square))+'\n')
 
             # 先转换为数组再求平均，也要保存每折的结果！
         # results保存为文件
