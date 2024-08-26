@@ -114,7 +114,7 @@ def launch():
             # train_video_list = video_list[:int(len(video_list)*0.8)]
             # val_video_list = video_list[int(len(video_list)*0.8):]
             # K-FOLDs
-            n_frames_list = [3,5,7,9,11,13]
+            n_frames_list = [3,5,7,9,11]
             for n_frames in n_frames_list:
                 model = create_model(
                     in_dim=in_dim,
@@ -144,7 +144,8 @@ def launch():
                     padding=True, # 舍弃不足n帧的数据
                     **val_processing_params
                 )
-
+                if n_frames!=5:
+                    continue
                 '''
                 # create instance for plotting errors
                 error_plotter = ErrorPlotter(
