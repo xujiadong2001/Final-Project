@@ -96,17 +96,18 @@ def launch():
 
             video_list = [f for f in os.listdir(photos_dir)]
             # 打乱数据
-
+            np.random.shuffle(video_list)
             val_video_list = video_list[3 * int(len(video_list) / 5):(3 + 1) * int(len(video_list) / 5)]
             train_video_list = [i for i in video_list if i not in val_video_list]
 
-            np.random.shuffle(video_list)
+
             label_encoder = FTPoseEncoder(label_names, ft_pose_limits, device)
             # train_video_list = video_list[:int(len(video_list)*0.8)]
             # val_video_list = video_list[int(len(video_list)*0.8):]
             # K-FOLDs
-            n_frames_list = [5,7,9,11]
+            n_frames_list = [3,5,7,9,11]
             for n_frames in n_frames_list:
+
                 model = create_model(
                     in_dim=in_dim,
                     in_channels=in_channels,
@@ -144,8 +145,6 @@ def launch():
                     **val_processing_params
                 )
 
-                if n_frames!=5:
-                    continue
                 '''
                 # create instance for plotting errors
                 error_plotter = ErrorPlotter(
