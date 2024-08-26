@@ -288,7 +288,7 @@ class CNN(nn.Module):
             elif activation == 'elu':
                 fc_modules.append(nn.ELU())
             fc_modules.append(nn.Dropout(dropout))
-        fc_modules.append(nn.Linear(fc_layers[-1], out_dim))
+        fc_modules.append(nn.Linear(fcc_layers[-1], out_dim))
 
         self.fc = nn.Sequential(*fc_modules)
 

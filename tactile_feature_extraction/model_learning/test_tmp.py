@@ -106,15 +106,12 @@ def launch():
             video_list = [f for f in os.listdir(photos_dir)]
             # 打乱数据
 
-            val_video_list = video_list[3 * int(len(video_list) / 5):(3 + 1) * int(len(video_list) / 5)]
-            train_video_list = [i for i in video_list if i not in val_video_list]
 
             np.random.shuffle(video_list)
             # train_video_list = video_list[:int(len(video_list)*0.8)]
             # val_video_list = video_list[int(len(video_list)*0.8):]
             # K-FOLDs
-            n_frames_list = [3,5,7,9,11,13]
-            for n_frames in n_frames_list:
+            for index in range(5):
                 model = create_model(
                     in_dim=in_dim,
                     in_channels=in_channels,
@@ -123,8 +120,10 @@ def launch():
                     device=device,
                     # cnn_model_dir="collect_331_5D_surface/model/non_async/"+task+"/331/simple_cnn/best_model.pth"
                 )
-
-
+                if index!=3:
+                    continue
+                val_video_list = video_list[index*int(len(video_list)/5):(index+1)*int(len(video_list)/5)]
+                train_video_list = [i for i in video_list if i not in val_video_list]
 
                 # set generators and loaders
                 train_generator = DataGenerator(
@@ -143,6 +142,11 @@ def launch():
                     padding=True, # 舍弃不足n帧的数据
                     **val_processing_params
                 )
+                # 划分训练集和验证集
+                # train_size = int(0.8 * len(train_generator))
+                # val_size = len(train_generator) - train_size
+                # train_generator, val_generator = torch.utils.data.random_split(train_generator, [train_size, val_size])
+                # create the encoder/decoder for labels
                 label_encoder = FTPoseEncoder(label_names, ft_pose_limits, device)
                 '''
                 # create instance for plotting errors
@@ -193,9 +197,9 @@ def launch():
                 R_square.append(eval_result[3])
                 model.train()
                 # 改名
-                rename_file(os.path.join(save_dir, 'best_model.pth'),os.path.join(save_dir, 'best_model.pth_'+str(n_frames)))
+                rename_file(os.path.join(save_dir, 'best_model.pth'),os.path.join(save_dir, 'best_model.pth_'+str(index)))
             with open(os.path.join(save_dir, 'model_result.txt'), 'w') as f:
-                f.write(str(n_frames)+':\n')
+                f.write(model_type+':\n')
                 f.write('MAE:'+str(MAE)+'\n')
                 f.write('MAE_mean:'+str(np.mean(MAE))+'\n')
                 f.write('MSE:'+str(MSE)+'\n')
