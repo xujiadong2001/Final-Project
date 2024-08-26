@@ -110,6 +110,7 @@ def launch():
             train_video_list = [i for i in video_list if i not in val_video_list]
 
             np.random.shuffle(video_list)
+            label_encoder = FTPoseEncoder(label_names, ft_pose_limits, device)
             # train_video_list = video_list[:int(len(video_list)*0.8)]
             # val_video_list = video_list[int(len(video_list)*0.8):]
             # K-FOLDs
@@ -143,7 +144,7 @@ def launch():
                     padding=True, # 舍弃不足n帧的数据
                     **val_processing_params
                 )
-                label_encoder = FTPoseEncoder(label_names, ft_pose_limits, device)
+
                 '''
                 # create instance for plotting errors
                 error_plotter = ErrorPlotter(
