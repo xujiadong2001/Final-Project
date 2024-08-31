@@ -665,7 +665,7 @@ class GRUDecoder(nn.Module):
         # self.gru = nn.GRU(output_dim+hidden_dim, hidden_dim, batch_first=False)
         self.gru = nn.GRU(output_dim , hidden_dim, batch_first=False)
         # self.fc = nn.Linear(output_dim+2*hidden_dim, output_dim) # x现在是上一步的输出
-        # self.fc = nn.Linear(hidden_dim, output_dim)  # x现在是上一步的输出
+        # self.fc = nn.Linear(hidden_dim, output_dim)
         self.fc = nn.Linear(hidden_dim, hidden_dim)
         if activation == 'relu':
             self.activation = nn.ReLU()
