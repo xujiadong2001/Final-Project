@@ -10,6 +10,7 @@ import torch.optim as optim
 import torch.nn as nn
 import torch
 from torch.utils.tensorboard import SummaryWriter
+import time
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
@@ -29,7 +30,7 @@ def train_model_w_metrics(
     error_plotter=None,
     calculate_train_metrics=False,
     device='cpu',
-    return_result = False
+    return_result = False,
 ):
     # tensorboard writer for tracking vars
     writer = SummaryWriter(os.path.join(save_dir, 'tensorboard_runs'))
@@ -193,6 +194,7 @@ def train_model_w_metrics(
     # for saving best model
     lowest_val_loss = np.inf
     best_model = None
+    time_start = time.time()
     with tqdm(total=learning_params['epochs']) as pbar:
 
         # Main training loop
